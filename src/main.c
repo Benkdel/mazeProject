@@ -1,41 +1,54 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include "headers.h"
 
-#include <SDL2/SDL.h>
+const int SCREEN_WIDTH = 640;
+const int SCREEN_HEIGHT = 480;
+
+
+void pollEvents(sdl_window *window, SDL_Event *event);
 
 /**
 * main - entry point
 * Return: 0 for success
 */
-int main(void) 
+int main(int argc, char **argv) 
 {
-    SDL_Window *window;
-    SDL_Renderer *renderer;
+    
+    sdl_window window;
+    bool quit = false;
+    SDL_Event event;
 
-    /* Initialize SDL */
-    if (SDL_Init(SDL_INIT_VIDEO) != 0)
+    if (!initWindow(&window, SCREEN_WIDTH, SCREEN_HEIGHT))
     {
-        fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
+        cleanUp(&window);
+        printf("Exiting program as a result of failing to initialice SDL window");
         return (1);
     }
 
-    /* Create a new window instance */
-    window = SDL_CreateWindow("SDL2 \\o/", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1260, 720, 0);
-    if (window == NULL)
+  
+    while (!window.windowShouldClose)
     {
-        fprintf(stderr, "SDL_CreateWindow Error: %s\n", SDL_GetError());
-        SDL_Quit();
-        return (1);
+        // handle events on queue
+        pollEvents(&window, &event);
+
+        /* Fill the surface white */
+        SDL_FillRect(window.screenSurface, NULL, SDL_MapRGB(window.screenSurface->format, 0xFF, 0xFF, 0xFF));
+
+        /* Update the surface */
+        SDL_UpdateWindowSurface(window.window);
     }
 
-    /* Create a new renderer instance linked to the window */
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    if (renderer == NULL)
-    {
-        SDL_DestroyWindow(window);
-        fprintf(stderr, "SDL_CreateRenderer Error: %s\n", SDL_GetError());
-        SDL_Quit();
-        return (1);
-    }
+    /* cleanup SDL */
+    cleanUp(&window);
+
     return (0);
+}
+
+void pollEvents(sdl_window *window, SDL_Event *event)
+{
+    // User request
+    while (SDL_PollEvent(event) != 0)
+    {
+        if (event->type == SDL_QUIT)
+            window->windowShouldClose = true;
+    }
 }
