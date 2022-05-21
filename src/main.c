@@ -14,6 +14,7 @@ int main(int argc, char **argv)
 {
     
     sdl_window window;
+    media_handler media;
     bool quit = false;
     SDL_Event event;
 
@@ -24,19 +25,20 @@ int main(int argc, char **argv)
         return (1);
     }
 
-  
+    loadMedia(&media, &window, "../assets/images/space_1.png");
+
     while (!window.windowShouldClose)
     {
         // handle events on queue
         pollEvents(&window, &event);
 
         /* Fill the surface white */
-        SDL_FillRect(window.screenSurface, NULL, SDL_MapRGB(window.screenSurface->format, 0xFF, 0xFF, 0xFF));
+        //SDL_FillRect(window.screenSurface, NULL, SDL_MapRGB(window.screenSurface->format, 0xFF, 0xFF, 0xFF));
+        SDL_BlitSurface(media.image, NULL, window.screenSurface, NULL);
 
         /* Update the surface */
         SDL_UpdateWindowSurface(window.window);
     }
-
     /* cleanup SDL */
     cleanUp(&window);
 

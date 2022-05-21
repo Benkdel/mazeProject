@@ -7,6 +7,8 @@
 */
 bool initWindow(sdl_window* window, int scr_w, int scr_h)
 {
+    int imgFlags = IMG_INIT_PNG;
+    
     /* Initialization of SDL */
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
@@ -41,6 +43,12 @@ bool initWindow(sdl_window* window, int scr_w, int scr_h)
     //Initialize renderer color
     SDL_SetRenderDrawColor(window->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
     
+    if (!(IMG_Init(imgFlags) & imgFlags))
+    {
+        printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
+        return (false);
+    }
+
     window->screenSurface = SDL_GetWindowSurface(window->window);
 
     return (true);

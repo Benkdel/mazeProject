@@ -1,5 +1,5 @@
 #OBJS sepecifies wich files to compile as part of the project
-OBJS = main.c sdl_window.c
+OBJS = main.c sdl_window.c loadImg.c
 
 #CC specifies compiler
 CC = gcc
