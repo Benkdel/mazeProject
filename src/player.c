@@ -49,14 +49,16 @@ void playerRender(sdl_window *w, player *p)
     vec3 highPoint = p->dir;
     vec3 lowPoint = p->dir;
     float deltaY;
-    
+    float inc;
+    int i = 0;
+
     SDL_SetRenderDrawColor(w->renderer, 255, 0, 0, 1);
     SDL_RenderDrawLine(w->renderer, p->pos.x, p->pos.y, p->dir.x, p->dir.y); // for now we are multiplying for 100 to be able to see better the player vector
 
     /* render its multiple rays */
 
     // set y component / 2 as delta
-    deltaY = getVecFromAngle(100, p->fov).y / 2;
+    deltaY = getVecFromAngle(100, p->fov).y;
 
     // update basis vectors
     highPoint.y += deltaY;
@@ -66,8 +68,14 @@ void playerRender(sdl_window *w, player *p)
     //normalizeVec(&lowPoint, p->pos);
 
     // store array of vec3 with end points for diff rays
-    p->noRays = 3;
+    p->noRays = 10;
     p->rays[0] = p->dir;
-    p->rays[1] = highPoint;
-    p->rays[2] = lowPoint;
+
+    inc = (highPoint.y - lowPoint.y) / 10;
+    for (i = 1; i <= 10; i++)
+    {
+        lowPoint.y += inc; 
+        p->rays[i] = lowPoint;
+    }
+
 }

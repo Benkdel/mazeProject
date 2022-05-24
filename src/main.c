@@ -22,13 +22,18 @@ int main(int argc, char **argv)
     outer_walls oWalls;
     player firstPlayer;
     player tmp;
-    line wall;
+    line walls[MAX_WALLS];
 
     vec3 pos;
     vec3 dir;
     vec3 intPos;
+    vec3 closestVec;
 
-    unsigned int i = 0;
+    unsigned int i, j;
+
+    float wallX, wallY;
+    float currentDistance;
+    float closestDistance;
 
     /* IO */
     mouse_handler mouse;
@@ -56,10 +61,20 @@ int main(int argc, char **argv)
     // set keyboard init pos
     keyBoard.pos = pos;
 
-    wall.x1 = 1000;
+    // set array of walls
+    for (i = 0; i < MAX_WALLS; i++)
+    {
+        walls[i].x1 = (rand() % (oWalls.w - oWalls.x)) + oWalls.x;
+        walls[i].x2 = (rand() % (oWalls.w - oWalls.x)) + oWalls.x;
+
+        walls[i].y1 = (rand() % (oWalls.h - oWalls.y)) + oWalls.y;
+        walls[i].y2 = (rand() % (oWalls.h - oWalls.y)) + oWalls.y;
+    }
+
+    /*wall.x1 = 1000;
     wall.y1 = 700;
     wall.x2 = 1000;
-    wall.y2 = 200;
+    wall.y2 = 200;*/
 
     bool firstCheck = true;
 
@@ -82,10 +97,12 @@ int main(int argc, char **argv)
         playerUpdateDir(&firstPlayer, dir);
 
         playerUpdatePos(&firstPlayer, keyBoard.pos);
-        // printf("player x: %d , y: %d\n", player.pos.x, player.pos.y);
 
         /* render wall and player*/
-        renderWall(&window, &wall);
+        for (i = 0; i < MAX_WALLS; i++)
+        {
+            renderWall(&window, &walls[i]);
+        }
         playerRender(&window, &firstPlayer);
 
         /* check if there is intersection */
@@ -93,35 +110,52 @@ int main(int argc, char **argv)
         {
             for (i = 0; i < firstPlayer.noRays; i++)
             {
-                printf("Point[%d] => x: %f  y:%f \n", i, firstPlayer.rays[i].x, firstPlayer.rays[i].y);
+                printf("Rays Directions: \nPoint[%d] => x: %f  y:%f \n", i, firstPlayer.rays[i].x, firstPlayer.rays[i].y);
+            }
+            printf("========= \n");
+            for (i = 0; i < MAX_WALLS; i++)
+            {
+                printf("Walls Pos: \nPoint[%d] => x1: %f  y1:%f \n", i, walls[i].x1, walls[i].y1);
+                printf("Walls Pos: \nPoint[%d] => x2: %f  y2:%f \n", i, walls[i].x2, walls[i].y2);
             }
             firstCheck = false;
         }
-        
+
+        // loop throught all rays from player
         for (i = 0; i < firstPlayer.noRays; i++)
         {
             tmp.pos = firstPlayer.pos;
             tmp.dir = firstPlayer.rays[i];
 
-            if (rayCasting(wall, tmp, &intPos))
+            closestDistance = 100000.0f;
+            closestVec = tmp.pos;
+
+            // loop through all the walls
+            for (j = 0; j < MAX_WALLS; j++)
             {
-                SDL_SetRenderDrawColor(window.renderer, 255, 255, 255, 1);
-                SDL_RenderDrawLine(window.renderer, firstPlayer.pos.x, firstPlayer.pos.y, intPos.x, intPos.y);
-                if (printData)
+                if (rayCasting(walls[j], tmp, &intPos))
                 {
-                    printf("Ray[%d]\n", i);
-                    printf("Hit from position: x: %f  y: %f \n", tmp.pos.x, tmp.pos.y);
-                    printf("Hit with direction: x: %f  y: %f \n", tmp.dir.x, tmp.dir.y); 
-                    printf("Hit wall at position: x: %f  y: %f\n", intPos.x, intPos.y);
+                    currentDistance = distanceBtwPoints(firstPlayer.pos, intPos);
+                    
+                    // check all walls to see which is the nearest one
+                    if (currentDistance < closestDistance)
+                    {
+                        closestVec = intPos;
+                        closestDistance = currentDistance;
+                    }
+
                 }
             }
+            // then draw closest hit
+            SDL_SetRenderDrawColor(window.renderer, 255, 255, 255, 1);
+            SDL_RenderDrawLine(window.renderer, firstPlayer.pos.x, firstPlayer.pos.y, closestVec.x, closestVec.y);
         }
 
         if (printData)
         {
             printData = false;
         }
-        
+
         /* Update the surface */
         SDL_RenderPresent(window.renderer);
     }

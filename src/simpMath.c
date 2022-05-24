@@ -106,3 +106,20 @@ vec3 getVecFromAngle(float magnitude, float angle)
 
     return result;
 }
+
+/**
+ * distanceBtwPoints - 
+ * 
+ * 
+ */
+float distanceBtwPoints(vec3 p1, vec3 p2)
+{
+    // for now its only 2D
+    float distX;
+    float distY;
+
+    distX = (p1.x - p2.x) * (p1.x - p2.x);
+    distY = (p1.y - p1.y) * (p1.y - p2.y);
+    
+    return (sqrt(distX + distY));
+}

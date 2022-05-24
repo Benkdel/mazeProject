@@ -19,11 +19,13 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 /* ========================================== */
 /* MACROS */
 /* ========================================== */
 #define MAX_RAYS 36
+#define MAX_WALLS 10
 
 /* ========================================== */
 /* ENUMS */

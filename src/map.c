@@ -36,7 +36,7 @@ void setOuterWalls(sdl_window *w, outer_walls *walls, double size)
  */
 void renderOuterWalls(sdl_window *w, outer_walls *walls)
 {
-    SDL_SetRenderDrawColor(w->renderer, 0, 0, 0, 1);
+    SDL_SetRenderDrawColor(w->renderer, 255, 255, 255, 1);
     SDL_RenderDrawRect(w->renderer, &walls->sdl_walls);
 }
 

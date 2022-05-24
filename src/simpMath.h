@@ -31,7 +31,8 @@ vec3 scalarMult(vec3 vec, float value);
 vec3 vectorMult(vec3 vec1, vec3 vec2);
 vec3 vectorAddition(vec3 vec1, vec3 vec2);
 
-/* trigonometry functions */
+/* trigonometry / Geometry functions */
 vec3 getVecFromAngle(float magnitude, float angle);
+float distanceBtwPoints(vec3 p1, vec3 p2);
 
 #endif
