@@ -33,7 +33,7 @@ bool initWindow(sdl_window* window, int scr_w, int scr_h)
     }
 
     //Create renderer for window
-	window->renderer = SDL_CreateRenderer(window->window, -1, SDL_RENDERER_ACCELERATED);
+	window->renderer = SDL_CreateRenderer(window->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	if(window->renderer == NULL)
 	{
 	    printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
@@ -51,6 +51,10 @@ bool initWindow(sdl_window* window, int scr_w, int scr_h)
 
     window->screenSurface = SDL_GetWindowSurface(window->window);
 
+    // store width and height for later use
+    window->SCREEN_WIDTH = scr_w;
+    window->SCREEN_HEIGHT = scr_h;
+
     return (true);
 }
 
@@ -59,14 +63,11 @@ bool initWindow(sdl_window* window, int scr_w, int scr_h)
  *
  * 
  */
-void cleanUp(sdl_window* window)
+void cleanUpWindow(sdl_window* window)
 {
     SDL_DestroyRenderer(window->renderer);
     SDL_DestroyWindow(window->window);
     window->renderer = NULL;
     window->window = NULL;
     window->screenSurface = NULL;
-
-    // IMG_Quit();
-    SDL_Quit();
 }
