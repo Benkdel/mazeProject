@@ -1,5 +1,5 @@
 #OBJS sepecifies wich files to compile as part of the project
-OBJS = main.c sdl_window.c texture.c map.c player.c raycast.c mouse.c simpMath.c
+OBJS = main.c sdl_window.c texture.c map.c player.c raycast.c mouse.c simpMath.c scene.c shapes.c
 
 #CC specifies compiler
 CC = gcc
@@ -12,7 +12,8 @@ LIBRARY_PATHS = -LC:\Users\cbent\dev\MinGW_Libs\lib
 
 #COMPILER_FLAGS specifies the additional compilation options were using
 # -Werror error descriptions
-COMPILER_FLAGS = -Werror
+# -g compiler flag
+COMPILER_FLAGS = -g -Werror
 
 #LINKER_FLAGS specifies the libraries were linking againts
 # -lm is to compile math lib

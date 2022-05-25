@@ -5,13 +5,11 @@
  *
  *
  */
-void textureInit(texture *t, unsigned int *tCount)
+void textureInit(texture *t)
 {
     t->texture = NULL;
     t->width = 0;
     t->height = 0;
-    t->id = *tCount + 1;
-    *tCount++;
 }
 
 /**
@@ -91,10 +89,10 @@ void textureRender(texture *t, sdl_window *w, int x, int y)
 {
     // set rendering space and render to screen
     SDL_Rect renderQuad;
-    renderQuad.x = x;
-    renderQuad.y = y;
-    renderQuad.w = t->width;
-    renderQuad.h = t->height;
+    renderQuad.x = (int)x;
+    renderQuad.y = (int)y;
+    renderQuad.w = (int)t->width;
+    renderQuad.h = (int)t->height;
 
     SDL_RenderCopy(w->renderer, t->texture, NULL, &renderQuad);
 }

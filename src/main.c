@@ -1,15 +1,9 @@
 #include "headers.h"
 
-/* ========================= */
-/* global variables */
-/* ========================= */
-
 const int SCREEN_WIDTH = 1200;
 const int SCREEN_HEIGHT = 800;
 
 void pollEvents(sdl_window *window, mouse_handler *mouse, keyboard_handler *keyBoard, SDL_Event *event);
-
-bool printData = false;
 
 /**
  * main - entry point
@@ -17,12 +11,18 @@ bool printData = false;
  */
 int main(int argc, char **argv)
 {
-    sdl_window window;
     SDL_Event event;
+    SDL_Rect miniMapVP;
+    SDL_Rect worldVP;
+
+    sdl_window window;
     outer_walls oWalls;
+    inner_walls iWalls;
     player firstPlayer;
-    player tmp;
-    line walls[MAX_WALLS];
+
+    /* to store lines that where a HIT */
+    line scene[MAX_SCENE_WIDTH];
+    size_t scene_lines_counter = 0;
 
     vec3 pos;
     vec3 dir;
@@ -46,35 +46,27 @@ int main(int argc, char **argv)
         return (1);
     }
 
+    /* set minimap and world ports */
+    setMinimapPort(&miniMapVP, window.SCREEN_WIDTH, window.SCREEN_HEIGHT);
+    setWorldPort(&worldVP, window.SCREEN_WIDTH, window.SCREEN_HEIGHT);
+
     /* set maps */
-    setOuterWalls(&window, &oWalls, 0.9);
+    setOuterWalls(&oWalls, &miniMapVP, 0.9);
 
     /* set wall and player */
-
     pos.x = 300;
     pos.y = 500;
     pos.z = 0;
     dir.x = 320;
     dir.y = 500;
     dir.z = 0;
-    playerInit(&firstPlayer, pos, dir, 60.0f);
+    playerInit(&window, &firstPlayer, pos, dir, 60.0f);
+
     // set keyboard init pos
     keyBoard.pos = pos;
 
-    // set array of walls
-    for (i = 0; i < MAX_WALLS; i++)
-    {
-        walls[i].x1 = (rand() % (oWalls.w - oWalls.x)) + oWalls.x;
-        walls[i].x2 = (rand() % (oWalls.w - oWalls.x)) + oWalls.x;
-
-        walls[i].y1 = (rand() % (oWalls.h - oWalls.y)) + oWalls.y;
-        walls[i].y2 = (rand() % (oWalls.h - oWalls.y)) + oWalls.y;
-    }
-
-    /*wall.x1 = 1000;
-    wall.y1 = 700;
-    wall.x2 = 1000;
-    wall.y2 = 200;*/
+    // Init inner walls
+    setInnerWalls(&iWalls, &oWalls);
 
     bool firstCheck = true;
 
@@ -88,67 +80,67 @@ int main(int argc, char **argv)
         SDL_RenderClear(window.renderer);
 
         /* render outer walls */
-        renderOuterWalls(&window, &oWalls);
+        renderOuterWalls(&window, &oWalls, &miniMapVP);
+
+        /* render wall and player*/
+        renderInnerWalls(&window, &iWalls, &miniMapVP);
+        playerRender(&window, &firstPlayer, &miniMapVP);
 
         /* update player vector */
         dir.x = mouse.position.x;
         dir.y = mouse.position.y;
         dir.z = 0;
         playerUpdateDir(&firstPlayer, dir);
-
         playerUpdatePos(&firstPlayer, keyBoard.pos);
 
-        /* render wall and player*/
-        for (i = 0; i < MAX_WALLS; i++)
-        {
-            renderWall(&window, &walls[i]);
-        }
-        playerRender(&window, &firstPlayer);
-
         /* check if there is intersection */
-        if (firstCheck)
-        {
-            for (i = 0; i < firstPlayer.noRays; i++)
-            {
-                printf("Rays Directions: \nPoint[%d] => x: %f  y:%f \n", i, firstPlayer.rays[i].x, firstPlayer.rays[i].y);
-            }
-            printf("========= \n");
-            for (i = 0; i < MAX_WALLS; i++)
-            {
-                printf("Walls Pos: \nPoint[%d] => x1: %f  y1:%f \n", i, walls[i].x1, walls[i].y1);
-                printf("Walls Pos: \nPoint[%d] => x2: %f  y2:%f \n", i, walls[i].x2, walls[i].y2);
-            }
-            firstCheck = false;
-        }
-
+        scene_lines_counter = 0;
         // loop throught all rays from player
         for (i = 0; i < firstPlayer.noRays; i++)
         {
-            tmp.pos = firstPlayer.pos;
-            tmp.dir = firstPlayer.rays[i];
-
             closestDistance = 100000.0f;
-            closestVec = tmp.pos;
+            closestVec = firstPlayer.rays[i].pos;
 
-            // loop through all the walls
+            // loop through all the walls to find the closest one
             for (j = 0; j < MAX_WALLS; j++)
             {
-                if (rayCasting(walls[j], tmp, &intPos))
+                if (rayCasting(iWalls.l[j], firstPlayer.rays[i], &intPos))
                 {
-                    currentDistance = distanceBtwPoints(firstPlayer.pos, intPos);
-                    
+                    currentDistance = distanceBtwPoints(firstPlayer.rays[i].pos, intPos);
+
                     // check all walls to see which is the nearest one
                     if (currentDistance < closestDistance)
                     {
                         closestVec = intPos;
                         closestDistance = currentDistance;
                     }
-
                 }
             }
             // then draw closest hit
+            SDL_RenderSetViewport(window.renderer, &miniMapVP);
             SDL_SetRenderDrawColor(window.renderer, 255, 255, 255, 1);
             SDL_RenderDrawLine(window.renderer, firstPlayer.pos.x, firstPlayer.pos.y, closestVec.x, closestVec.y);
+            
+            // store hit to draw it in world view port
+            line l;
+            l.x1 = firstPlayer.pos.x;
+            l.y1 = firstPlayer.pos.y;
+            l.x2 = closestVec.x;
+            l.y2 = closestVec.y;
+            scene[scene_lines_counter] = l;
+            scene_lines_counter++;
+        }
+
+        /* Render SCENE in world view port */
+        renderScene(&window, &worldVP, scene, scene_lines_counter);
+        
+        // clear scene
+        for (size_t s = 0; s < scene_lines_counter; s++)
+        {
+            scene[s].x1 = 0;
+            scene[s].y1 = 0;
+            scene[s].x2 = 0;
+            scene[s].y2 = 0;
         }
 
         if (printData)

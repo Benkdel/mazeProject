@@ -19,9 +19,9 @@ void normalizeVec(vec3 *v3, vec3 origin)
     if (magnitude > 0)
     {
         // normalize vector:
-        v3-> x / magnitude;
-        v3-> y / magnitude;
-        v3-> z / magnitude;
+        v3->x /= magnitude;
+        v3->y /= magnitude;
+        v3->z /= magnitude;
     }
 }
 
@@ -100,8 +100,8 @@ vec3 getVecFromAngle(float magnitude, float angle)
     vec3 result;
     float radians = angle * (CONST_PI / 180);
 
-    result.x = cos(radians) * magnitude;
-    result.y = sin(radians) * magnitude;
+    result.x = acos(radians) * magnitude;
+    result.y = asin(radians) * magnitude;
     result.z = 0; // for now we are working in 2D
 
     return result;
@@ -123,3 +123,14 @@ float distanceBtwPoints(vec3 p1, vec3 p2)
     
     return (sqrt(distX + distY));
 }
+
+/**
+ * clampInts - 
+ * 
+ * 
+ */
+void clampInts(int *value, int lower, int upper)
+{
+    *value = (*value > upper) ? upper : *value;
+    *value = (*value < lower) ? lower : *value;
+} 

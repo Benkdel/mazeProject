@@ -24,12 +24,20 @@
 /* ========================================== */
 /* MACROS */
 /* ========================================== */
-#define MAX_RAYS 36
+#define MAX_RAYS 90
 #define MAX_WALLS 10
+#define MAX_SCENE_WIDTH 1024
 
 /* ========================================== */
 /* ENUMS */
 /* ========================================== */
+
+
+/* ========================================== */
+/* GLOBAL VARIABLES */
+/* ========================================== */
+bool printData;
+
 
 /* ======================================= */
 /* STRUCTS */
@@ -105,7 +113,25 @@ typedef struct outer_walls
     double sizeOfMap;
 } outer_walls;
 
+/**
+ *  
+ * 
+ */
+typedef struct inner_walls {
+    line l[MAX_WALLS];
+} inner_walls;
+
 /* entities */
+
+/**
+ * ray - 
+ * 
+ * 
+ */
+typedef struct ray {
+    vec3 pos;
+    vec3 dir;
+} ray;
 
 /**
  * struct entity_player -
@@ -116,9 +142,9 @@ typedef struct outer_walls
 typedef struct entity_player {
     vec3 pos;
     vec3 dir; // should be a normalize vector
-    float fov; // field of view
-    vec3 rays[MAX_RAYS];
+    ray rays[MAX_RAYS];
     unsigned int noRays;
+    texture text;
 
 } player;
 
@@ -131,25 +157,34 @@ bool initWindow(sdl_window *, int, int);
 void cleanUpWindow(sdl_window *);
 
 /* map functions */
-void setOuterWalls(sdl_window *, outer_walls *, double);
-void renderOuterWalls(sdl_window *w, outer_walls *walls);
-void renderWall(sdl_window *, line *);
+void setOuterWalls(outer_walls *, SDL_Rect *, double);
+void renderOuterWalls(const sdl_window *w, const outer_walls *, const SDL_Rect *);
+void setInnerWalls(inner_walls *, const outer_walls *);
+void renderInnerWalls(const sdl_window *, const inner_walls *, const SDL_Rect *);
+void setMinimapPort(SDL_Rect *, unsigned int, unsigned int);
+void setWorldPort(SDL_Rect *, unsigned int, unsigned int);
 
 /* texture methods prototypes */
-void textureInit(struct texture_class *, unsigned int *);
+void textureInit(struct texture_class *);
 void textureClean(struct texture_class *);
-void textureLoad(struct texture_class *, sdl_window *w, char *);
-void textureRender(struct texture_class *, sdl_window *w, int, int);
-void textureSetBlending(texture *t, SDL_BlendMode blending);
-void textureAlphaMod(texture *t, Uint8 alpha);
+void textureLoad(struct texture_class *, sdl_window *, char *);
+void textureRender(struct texture_class *, sdl_window *, int, int);
+void textureSetBlending(texture *, SDL_BlendMode);
+void textureAlphaMod(texture *, Uint8);
 
 /* math - should be in another library */
-bool rayCasting(line l1, player l2, vec3 *intPoint);
+bool rayCasting(line, ray, vec3 *);
 
 /* player methods */
-void playerInit(player *p, vec3 pos, vec3 dir, float fov);
-void playerUpdateDir(player *p, vec3 dir);
-void playerUpdatePos(player *p, vec3 pos);
-void playerRender(sdl_window *w, player *p);
+void playerInit(sdl_window *, player *, vec3, vec3, float);
+void playerUpdateDir(player *, vec3);
+void playerUpdatePos(player *, vec3);
+void playerRender(sdl_window *, player *, SDL_Rect *);
+
+/* SCENE METHODS */
+void renderScene(sdl_window *, SDL_Rect *, const line *, size_t);
+
+/* SHAPES */
+void drawCircle(SDL_Renderer *, int32_t, int32_t, int32_t);
 
 #endif

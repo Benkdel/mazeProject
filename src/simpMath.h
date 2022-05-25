@@ -30,9 +30,13 @@ void normalizeVec(vec3 *v3, vec3 origin);
 vec3 scalarMult(vec3 vec, float value);
 vec3 vectorMult(vec3 vec1, vec3 vec2);
 vec3 vectorAddition(vec3 vec1, vec3 vec2);
+vec3 vectorSubstraction(vec3 vec1, vec3 vec2);
 
 /* trigonometry / Geometry functions */
 vec3 getVecFromAngle(float magnitude, float angle);
 float distanceBtwPoints(vec3 p1, vec3 p2);
+
+/* utilitites */
+void clampInts(int *value, int lower, int upper);
 
 #endif

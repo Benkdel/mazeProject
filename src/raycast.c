@@ -6,7 +6,7 @@
  * 
  * 
  */
-bool rayCasting(line l1, player l2, vec3 *intPoint)
+bool rayCasting(line l1, ray r, vec3 *intPoint)
 {
     float t = -1; // must be betw 0 and 1
     float u = -1; // must be > 0
@@ -16,10 +16,10 @@ bool rayCasting(line l1, player l2, vec3 *intPoint)
     const float y1 = l1.y1;
     const float x2 = l1.x2;
     const float y2 = l1.y2;
-    const float x3 = l2.pos.x;
-    const float y3 = l2.pos.y;
-    const float x4 = l2.dir.x;
-    const float y4 = l2.dir.y;
+    const float x3 = r.pos.x;
+    const float y3 = r.pos.y;
+    const float x4 = r.dir.x;
+    const float y4 = r.dir.y;
 
     float den;
 

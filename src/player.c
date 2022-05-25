@@ -1,30 +1,27 @@
 #include "headers.h"
 
 /**
- * playerInit
+ * playerInit - 
  * 
  * 
  */
-void playerInit(player *p, vec3 pos, vec3 dir, float fov)
+void playerInit(sdl_window *w, player *p, vec3 pos, vec3 dir, float fov)
 {
     p->pos = pos;
-    normalizeVec(&dir, pos);
-    p->dir = dir;
+    p->dir = p->dir;
 
-    p->fov = fov;
+    //textureInit(&p->text);
+    //textureLoad(&p->text, w, "../assets/images/flash_light.png");
 }
 
 /**
- * updatePlayerDir
+ * updatePlayerDir - 
  * 
  * 
  */
 void playerUpdateDir(player *p, vec3 dir)
 {
-    p->dir.x = dir.x;
-    p->dir.y = dir.y;
-    p->dir.z = dir.z;
-    normalizeVec(&p->dir, p->pos);
+    p->dir = dir;
 }
 
 /**
@@ -33,49 +30,30 @@ void playerUpdateDir(player *p, vec3 dir)
  */
 void playerUpdatePos(player *p, vec3 pos)
 {
-    float velocity = 0.5f;
-
-    p->pos.x = pos.x * velocity;
-    p->pos.y = pos.y * velocity;
-    p->pos.z = pos.z * velocity;
+    float velocity = 1.05f;
+    p->pos = scalarMult(pos, velocity);
 }
 
 /**
  * renderPlayer -
  * 
  */
-void playerRender(sdl_window *w, player *p)
+void playerRender(sdl_window *w, player *p, SDL_Rect *port)
 {
-    vec3 highPoint = p->dir;
-    vec3 lowPoint = p->dir;
-    float deltaY;
-    float inc;
     int i = 0;
 
-    SDL_SetRenderDrawColor(w->renderer, 255, 0, 0, 1);
-    SDL_RenderDrawLine(w->renderer, p->pos.x, p->pos.y, p->dir.x, p->dir.y); // for now we are multiplying for 100 to be able to see better the player vector
+    SDL_RenderSetViewport(w->renderer, port);
+    SDL_SetRenderDrawColor(w->renderer, 255, 255, 51, 1);
+    drawCircle(w->renderer, (int32_t)p->pos.x, (int32_t)p->pos.y, CONST_PI * 2);
 
-    /* render its multiple rays */
+    /* render texture as player */
 
-    // set y component / 2 as delta
-    deltaY = getVecFromAngle(100, p->fov).y;
+    p->noRays = MAX_RAYS;
 
-    // update basis vectors
-    highPoint.y += deltaY;
-    lowPoint.y -= deltaY;
-
-    //normalizeVec(&highPoint, p->pos);
-    //normalizeVec(&lowPoint, p->pos);
-
-    // store array of vec3 with end points for diff rays
-    p->noRays = 10;
-    p->rays[0] = p->dir;
-
-    inc = (highPoint.y - lowPoint.y) / 10;
-    for (i = 1; i <= 10; i++)
+    for (i = 0; i < p->noRays; i++)
     {
-        lowPoint.y += inc; 
-        p->rays[i] = lowPoint;
+        p->rays[i].pos = p->pos;
+        p->rays[i].dir = vectorAddition(p->dir, getVecFromAngle(100, i));
     }
-
 }
+

@@ -1,4 +1,4 @@
-# Maze Porject using SDL and RayCasting
+# Maze Porject using SDL and RayCasting, code in C
 
 
 # command to make file: mingw32-make.exe
