@@ -20,7 +20,6 @@ void Map::setPerimeter(SDL_Rect *port)
     this->recWalls.h = this->h;
 }
 
-
 void Map::renderGrid(Window *w, SDL_Rect *port)
 {
     int x, y;
@@ -31,7 +30,7 @@ void Map::renderGrid(Window *w, SDL_Rect *port)
     SDL_SetRenderDrawColor(w->renderer, 193, 193, 193, 0.5);
     for (x = CELL_SIZE; x < 1 + CELL_SIZE * GRID_WIDTH; x += CELL_SIZE)
     {
-        if (x == CELL_SIZE * GRID_WIDTH)
+        if (x == CELL_SIZE * (GRID_WIDTH - 1))
         {
             SDL_SetRenderDrawColor(w->renderer, 111, 149, 179, 1);
         }
@@ -43,14 +42,13 @@ void Map::renderGrid(Window *w, SDL_Rect *port)
     SDL_SetRenderDrawColor(w->renderer, 193, 193, 193, 0.5);
     for (y = CELL_SIZE; y < 1 + CELL_SIZE * GRID_HEIGHT; y += CELL_SIZE)
     {
-        if (y == CELL_SIZE * GRID_HEIGHT) 
+        if (y == CELL_SIZE * (GRID_HEIGHT - 1)) 
         {
             SDL_SetRenderDrawColor(w->renderer, 111, 149, 179, 1);
         }
         SDL_RenderDrawLine(w->renderer, 0, y, this->w + CELL_SIZE, y);
     }
 }
-
 
 void Map::renderInnerWalls(Window *w, SDL_Rect *port)
 {
