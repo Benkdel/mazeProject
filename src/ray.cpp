@@ -1,25 +1,24 @@
-#include "headers.h"
+#include "ray.hpp"
 
+Ray::Ray() {}
 
-/**
- * rayCasting -
- * 
- * 
- */
-bool rayCasting(line l1, ray r, vec3 *intPoint)
+Ray::Ray(vec2 pos, vec2 dir)
+    : pos(pos), dir(dir) {}
+
+bool Ray::cast(line wall)
 {
     float t = -1; // must be betw 0 and 1
     float u = -1; // must be > 0
 
     // use wiky notation
-    const float x1 = l1.x1;
-    const float y1 = l1.y1;
-    const float x2 = l1.x2;
-    const float y2 = l1.y2;
-    const float x3 = r.pos.x;
-    const float y3 = r.pos.y;
-    const float x4 = r.dir.x;
-    const float y4 = r.dir.y;
+    const float x1 = wall.p1.x;
+    const float y1 = wall.p1.y;
+    const float x2 = wall.p2.x;
+    const float y2 = wall.p2.y;
+    const float x3 = this->pos.x;
+    const float y3 = this->pos.y;
+    const float x4 = this->dir.x;
+    const float y4 = this->dir.y;
 
     float den;
 
@@ -31,14 +30,13 @@ bool rayCasting(line l1, ray r, vec3 *intPoint)
 
         if (t > 0 && t < 1 && u > 0)
         {
-            intPoint->x = x1 + t * (x2 - x1);
-            intPoint->y = y1 + t * (y2 - y1);
+            this->hit.x = x1 + t * (x2 - x1);
+            this->hit.y = y1 + t * (y2 - y1);
             return (true);
         }
         else
         {
             return (false);
-
         }
     }
     return (false);
