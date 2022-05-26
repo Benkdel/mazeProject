@@ -9,9 +9,6 @@
 #include "map.hpp"
 #include "scene.hpp"
 
-const int SCREEN_WIDTH = 1200;
-const int SCREEN_HEIGHT = 800;
-
 void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *event);
 void setMinimapPort(SDL_Rect *vp, unsigned int scr_W, unsigned int scr_H);
 void setWorldPort(SDL_Rect *vp, unsigned int scr_W, unsigned int scr_H);
@@ -25,9 +22,14 @@ int main(int argc, char **argv)
     SDL_Event event;
     SDL_Rect miniMapVP;
     SDL_Rect worldVP;
+    SDL_Rect hoverGrid;
 
+    // +1 so that the last grid lines fit in the 
+    const int SCREEN_WIDTH = (CELL_SIZE * GRID_WIDTH) + 1;
+    const int SCREEN_HEIGHT = (CELL_SIZE * GRID_HEIGHT) + 1;
+    
     Window window(SCREEN_WIDTH, SCREEN_HEIGHT);
-    OuterWalls oWalls;
+    Map map;
     std::vector<line> iWalls;
     Player firstPlayer;
 
@@ -55,23 +57,11 @@ int main(int argc, char **argv)
     setWorldPort(&worldVP, window.getWidth(), window.getHeight());
 
     // set outer walls
-    oWalls.setPerimeter(&miniMapVP, 0.9);
+    map.setPerimeter(&miniMapVP);
 
     // init player
-    firstPlayer.init(&oWalls);
+    firstPlayer.init(&map);
     keyboard.pos = firstPlayer.pos;
-
-    // set inner walls
-    for (i = 0; i < MAX_WALLS; i++)
-    {
-        line l;
-        l.p1.x = (rand() % (oWalls.w - oWalls.x)) + oWalls.x,
-        l.p1.y = (rand() % (oWalls.h - oWalls.y)) + oWalls.y,
-        l.p2.x = (rand() % (oWalls.w - oWalls.x)) + oWalls.x,
-        l.p2.y = (rand() % (oWalls.h - oWalls.y)) + oWalls.y,
-
-        iWalls.push_back(l);
-    }
 
     while (!window.windowShouldClose)
     {
@@ -81,21 +71,19 @@ int main(int argc, char **argv)
         // Clear screen
         SDL_SetRenderDrawColor(window.renderer, 0, 1, 2, 1);
         SDL_RenderClear(window.renderer);
-
-        oWalls.render(&window, &miniMapVP);
-
-        // render inner walls
-        SDL_RenderSetViewport(window.renderer, &miniMapVP);
-        SDL_SetRenderDrawColor(window.renderer, 255, 0, 0, 1);
-
-        for (i = 0; i < MAX_WALLS; i++)
-        {
-            SDL_RenderDrawLine(window.renderer, iWalls[i].p1.x, iWalls[i].p1.y, iWalls[i].p2.x, iWalls[i].p2.y);
-        }
+        
+        map.renderGrid(&window, &miniMapVP);
+        
+        map.renderInnerWalls(&window, &miniMapVP);
 
         firstPlayer.render(&window, &miniMapVP);
         firstPlayer.updateDir(vec2(mouse.position.x, mouse.position.y));
         firstPlayer.updatePos(keyboard.pos);
+
+        hoverGrid = {(mouse.position.x / CELL_SIZE) * CELL_SIZE, (mouse.position.y / CELL_SIZE) * CELL_SIZE, CELL_SIZE, CELL_SIZE};
+        SDL_RenderSetViewport(window.renderer, &miniMapVP);
+        SDL_SetRenderDrawColor(window.renderer, 255, 255, 255, 1);
+        SDL_RenderFillRect(window.renderer, &hoverGrid);
 
         // loop throught all rays from player
         firstPlayer.setUpRays();
@@ -105,10 +93,10 @@ int main(int argc, char **argv)
             closestVec = firstPlayer.rays[i].pos;
 
             // loop through all the walls to find the closest one
-            for (j = 0; j < MAX_WALLS; j++)
+            for (j = 0; j < map.innerWalls.size(); j++)
             {
-                if (firstPlayer.rays[i].cast(iWalls[j]))
-                {
+                if (firstPlayer.rays[i].cast(map.innerWalls[j]))
+                {;
                     currentDistance = distanceBtwPoints(firstPlayer.rays[i].pos, firstPlayer.rays[i].hit);
 
                     // check all walls to see which is the nearest one
@@ -134,10 +122,10 @@ int main(int argc, char **argv)
         }
 
         /* Render SCENE in world view port */
-        Scene scene;
+        /*Scene scene;
 
         scene.render(&window, &worldVP, scenePoints);
-        scenePoints.clear();
+        scenePoints.clear();*/
         /* Update the surface */
         SDL_RenderPresent(window.renderer);
     }
@@ -158,7 +146,7 @@ void setMinimapPort(SDL_Rect *vp, unsigned int scr_W, unsigned int scr_H)
 {
     vp->x = 0;
     vp->y = 0;
-    vp->w = scr_W / 2;
+    vp->w = (scr_W - 1) / 2;
     vp->h = scr_H;
 }
 
@@ -169,7 +157,7 @@ void setMinimapPort(SDL_Rect *vp, unsigned int scr_W, unsigned int scr_H)
  */
 void setWorldPort(SDL_Rect *vp, unsigned int scr_W, unsigned int scr_H)
 {
-    vp->x = scr_W / 2;
+    vp->x = (scr_W + 1) / 2;
     vp->y = 0;
     vp->w = scr_W;
     vp->h = scr_H;

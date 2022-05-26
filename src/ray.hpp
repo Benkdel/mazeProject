@@ -2,6 +2,7 @@
 #define RAY_HPP
 
 #include "myMathLib.hpp"
+#include <SDL.h>
 
 class Ray {
 public:
@@ -11,7 +12,7 @@ public:
 
     Ray(vec2 pos, vec2 dir);
 
-    bool cast(line wall);
+    bool cast(SDL_Rect wall);
 
     vec2 pos;
     vec2 dir;

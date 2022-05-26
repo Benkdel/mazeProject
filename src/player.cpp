@@ -8,7 +8,7 @@
 
 Player::Player() {}
 
-void Player::init(OuterWalls *w)
+void Player::init(Map *w)
 {
     this->pos = vec2(w->w / 2, w->h / 2);
     this->dir = this->pos + vec2(100, 0);

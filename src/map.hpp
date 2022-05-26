@@ -3,23 +3,29 @@
 
 #include <SDL.h>
 #include "window.hpp"
+#include <vector>
+#include "macros.hpp"
 
-class OuterWalls {
+class Map {
 public:
     
     // Empty constructor
-    OuterWalls();
+    Map();
 
     unsigned int x;
     unsigned int y;
     unsigned int w;
     unsigned int h;
     
-    void setPerimeter(SDL_Rect *port, double size);
+    void setPerimeter(SDL_Rect *port);
 
-    void render(Window *w, SDL_Rect *port);
+    void renderGrid(Window *w, SDL_Rect *port);
+    void renderInnerWalls(Window *w, SDL_Rect *port);
 
     SDL_Rect recWalls;
+
+    SDL_Rect mapCells[GRID_HEIGHT][GRID_WIDTH];
+    std::vector<SDL_Rect> innerWalls;
 
 };
 

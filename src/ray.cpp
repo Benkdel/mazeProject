@@ -5,16 +5,16 @@ Ray::Ray() {}
 Ray::Ray(vec2 pos, vec2 dir)
     : pos(pos), dir(dir) {}
 
-bool Ray::cast(line wall)
+bool Ray::cast(SDL_Rect wall)
 {
     float t = -1; // must be betw 0 and 1
     float u = -1; // must be > 0
 
     // use wiky notation
-    const float x1 = wall.p1.x;
-    const float y1 = wall.p1.y;
-    const float x2 = wall.p2.x;
-    const float y2 = wall.p2.y;
+    const float x1 = wall.x;
+    const float y1 = wall.y;
+    const float x2 = wall.x + wall.w;
+    const float y2 = wall.y + wall.h;
     const float x3 = this->pos.x;
     const float y3 = this->pos.y;
     const float x4 = this->dir.x;

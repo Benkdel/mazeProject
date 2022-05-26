@@ -14,7 +14,7 @@ public:
 
     Player();
 
-    void init(OuterWalls *w);
+    void init(Map *w);
 
     void updateDir(vec2 dir);
     void updatePos(vec2 pos);
