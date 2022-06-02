@@ -95,10 +95,10 @@ int main(int argc, char **argv)
         keyboard.velocity = 0.0f;
         
         vec2 collBoxpos = { (float)firstPlayer.box_collider.x, (float)firstPlayer.box_collider.y };
-        /*if (map_collision(firstPlayer.pos, &map, &miniMapVP, &window))
+        if (map_collision(firstPlayer.pos, &map, &miniMapVP, &window))
         {
             //std::cout << "collision detected!\n";
-        }*/
+        }
 
         if (keyboard.printData)
         {
@@ -141,7 +141,7 @@ int main(int argc, char **argv)
             // then draw closest hit
             SDL_RenderSetViewport(window.renderer, &miniMapVP);
             SDL_SetRenderDrawColor(window.renderer, 255, 255, 255, 1);
-            //SDL_RenderDrawLine(window.renderer, firstPlayer.pos.x, firstPlayer.pos.y, closestVec.x, closestVec.y);
+            SDL_RenderDrawLine(window.renderer, firstPlayer.pos.x, firstPlayer.pos.y, closestVec.x, closestVec.y);
 
             // store hit to draw it in world view port
             line l;
