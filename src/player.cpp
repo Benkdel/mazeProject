@@ -20,7 +20,6 @@ void drawTriangle(Window *w, Triangle t)
     SDL_RenderDrawLineF(w->renderer, t.p3.x, t.p3.y, t.p1.x, t.p1.y); // p3 to p1
 }
 
-
 Player::Player() {}
 
 void Player::init(Map *w)
@@ -45,7 +44,10 @@ void Player::updatePos(float velocity, vec2 mousePos, float dt, SDL_Rect *port)
     this->velocity.x = sinf(deg2rad(angle)) * velocity;
     this->velocity.y = -cosf(deg2rad(angle)) * velocity; // screen is upside down, y0 up, y last down
 
-    this->lastVelocity = this->velocity; // for debuggin
+    if (this->velocity.x != 0)
+        this->lastVelocity.x = this->velocity.x;
+    if (this->velocity.y != 0)
+        this->lastVelocity.y = this->velocity.y; // for debuggin
 
     this->pos.x += this->velocity.x * dt;
     this->pos.y += this->velocity.y * dt;
