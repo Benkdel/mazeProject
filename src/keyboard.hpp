@@ -14,6 +14,8 @@ public:
     vec2 pos;
 
     float velocity;
+    float acceleration;
+
     float angle;
 
     bool printData;

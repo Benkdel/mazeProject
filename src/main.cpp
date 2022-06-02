@@ -89,16 +89,16 @@ int main(int argc, char **argv)
 
         // update player pos
         vec2 mousePos = vec2(mouse.position.x, mouse.position.y);
-        firstPlayer.updatePos(keyboard.velocity, mousePos, deltaTime, &miniMapVP);
+        firstPlayer.updatePos(keyboard.acceleration, mousePos, deltaTime, &miniMapVP);
         firstPlayer.angle = keyboard.angle;
         // reset velocity
         keyboard.velocity = 0.0f;
         
         vec2 collBoxpos = { (float)firstPlayer.box_collider.x, (float)firstPlayer.box_collider.y };
-        if (map_collision(firstPlayer.pos, &map, &miniMapVP, &window))
+        /*if (map_collision(firstPlayer.pos, &map, &miniMapVP, &window))
         {
             //std::cout << "collision detected!\n";
-        }
+        }*/
 
         if (keyboard.printData)
         {
@@ -106,6 +106,8 @@ int main(int argc, char **argv)
             std::cout << "Player velocity == x: " << firstPlayer.lastVelocity.x << " y: " << firstPlayer.lastVelocity.y << "\n";
             std::cout << "Player Top Point == x: " << firstPlayer.translTriangle.p2.x << " y: " << firstPlayer.translTriangle.p2.y << "\n";
             std::cout << "Player angle: " << firstPlayer.angle << "\n";
+            std::cout << "Player Acceleration: " << keyboard.acceleration << "\n";
+            std::cout << "Player current velocity: " << firstPlayer.velocity_mag << "\n";
             keyboard.printData = false;
         }
 
@@ -219,12 +221,12 @@ void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *eve
                 case SDLK_ESCAPE:
                     window->windowShouldClose = true;
                     break;
-                case SDLK_w:
+                /*case SDLK_w:
                     keyBoard->velocity = 5.0f;
                     break;
                 case SDLK_s:
                     keyBoard->velocity = -5.0f;
-                    break;
+                    break;*/
                 case SDLK_LEFT:
                     keyBoard->angle -= 5.0f;
                     break;
@@ -238,6 +240,18 @@ void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *eve
                     break;
             }
         }
+    }
 
+    // reset acceleration
+    keyBoard->acceleration = 0;
+
+    const uint8_t *currentKeyStates = SDL_GetKeyboardState(NULL);
+    if (currentKeyStates[SDL_SCANCODE_W])
+    {
+        keyBoard->acceleration = 0.005f;
+    }
+    if (currentKeyStates[SDL_SCANCODE_S])
+    {
+        keyBoard->acceleration = -0.005f;
     }
 }

@@ -25,8 +25,14 @@ Player::Player() {}
 void Player::init(Map *w)
 {
     this->pos = vec2(w->w / 2, w->h / 2);
-    this->dir = this->pos + vec2(100, 0);
     this->velocity = vec2(0.0f, 0.0f);
+
+    this->velocity_mag = 0.0f;
+    this->prevVelocity_mag = 0.0f;
+
+    this->horizontalMaxSpeed = 2.0f;
+    this->verticalMaxSpeed = 2.0f;
+    this->slowdownRate = 0.3f; // times delta time and final push should be 2f?
 
     std::vector<Ray> vec(MAX_RAYS, Ray());
     this->rays = vec;
@@ -34,30 +40,61 @@ void Player::init(Map *w)
     this->angle = 90.0f;
     this->radius = 6.0f * CONST_PI;
 
-    this->triangle = Triangle(vec2(-2.5f, -2.5f), vec2( 0.0f, -5.0f), vec2( 2.5f, -2.5f));
+    this->triangle = Triangle(vec2(-2.5f, 2.5f), vec2(0.0f, -5.0f), vec2(2.5f, 2.5f));
 }
 
-void Player::updatePos(float velocity, vec2 mousePos, float dt, SDL_Rect *port)
+void Player::updatePos(float acceleration, vec2 mousePos, float dt, SDL_Rect *port)
 {
     // update velocity and store current angle
     //this->angle = getAngleFromVectors(this->pos, mousePos, vec2(0.0f, 0.0f));
-    this->velocity.x = sinf(deg2rad(angle)) * velocity;
-    this->velocity.y = -cosf(deg2rad(angle)) * velocity; // screen is upside down, y0 up, y last down
+    
+    // accelerate up to max speed, then mantain it until stop pusing key
+    if (acceleration != 0.0f)
+    {
+        // im still accelerating or pushing the breaks
+        if (this->prevVelocity_mag + acceleration >= this->horizontalMaxSpeed)
+            this->velocity_mag = horizontalMaxSpeed;
+        else if (this->prevVelocity_mag + acceleration <= 0.0f)
+            this->velocity_mag = 0.0f;
+        else
+            this->velocity_mag += this->prevVelocity_mag + acceleration;
+    }
+    else
+    {
+        // stop accelerating
+        this->velocity_mag = this->velocity_mag * (this->slowdownRate);
+        if (this->velocity_mag <= 0.05f)
+            this->velocity_mag = 0.0f; // final push
+    }
+    
+    // store last velocity magnitud:
+    this->prevVelocity_mag = this->velocity_mag;
+
+    this->velocity.x = sinf(deg2rad(angle)) * this->velocity_mag;
+    this->velocity.y = -cosf(deg2rad(angle)) * this->velocity_mag; // screen is upside down, y0 up, y last down
 
     if (this->velocity.x != 0)
         this->lastVelocity.x = this->velocity.x;
     if (this->velocity.y != 0)
         this->lastVelocity.y = this->velocity.y; // for debuggin
 
-    this->pos.x += this->velocity.x * dt;
-    this->pos.y += this->velocity.y * dt;
-
+    float nextHorPos = this->pos.x + this->velocity.x * dt;
+    float nextVerPos = this->pos.y + this->velocity.y * dt;
+    
     // update position and clamp it to the screen
     float limitX = (float)(port->x + port->w) - 25.0f;
     float limitY = (float)(port->y + port->h) - 50.0f;
+    
+    if (nextHorPos <= 0.0f || nextHorPos >= limitX)
+        this->velocity.x = 0.0f;
+    if (nextVerPos >= limitY || nextVerPos <= 0.0f)
+        this->velocity.y = 0.0f;
+   
+    this->pos.x += velocity.x * dt;
+    this->pos.y += velocity.y * dt;
 
-    this->pos.x = clamp(this->pos.x, 10.0f, limitX);
-    this->pos.y = clamp(this->pos.y, 10.0f, limitY);
+    //this->pos.x = clamp(this->pos.x, 10.0f, limitX);
+    //this->pos.y = clamp(this->pos.y, 10.0f, limitY);
 
     // update box collider
     this->box_collider.x = this->pos.x - this->radius * 7 / 10;
@@ -84,7 +121,7 @@ void Player::render(Window *w, SDL_Rect *port)
     Triangle transTriangle;
 
     // scale
-    float size = 10.0f;
+    float size = 5.0f;
     transTriangle.p1 = scale2Dvec(this->triangle.p1, size);
     transTriangle.p2 = scale2Dvec(this->triangle.p2, size);
     transTriangle.p3 = scale2Dvec(this->triangle.p3, size);

@@ -3,6 +3,8 @@
 
 #include "macros.hpp"
 
+#include <iostream>
+
 class vec2
 {
 public:
@@ -33,6 +35,7 @@ T clamp(T value, T lower, T upper)
     T result;
     result = (value > upper) ? upper : value;
     result = (value < lower) ? lower : value;
+
     return result;
 }
 
