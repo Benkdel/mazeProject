@@ -30,7 +30,7 @@ void Player::init(Map *w)
     this->velocity_mag = 0.0f;
     this->prevVelocity_mag = 0.0f;
 
-    this->horizontalMaxSpeed = 2.0f;
+    this->horizontalMaxSpeed = 1.0f;
     this->verticalMaxSpeed = 2.0f;
     this->slowdownRate = 0.3f; // times delta time and final push should be 2f?
 
@@ -46,6 +46,7 @@ void Player::init(Map *w)
 void Player::updatePos(float acceleration, vec2 mousePos, float dt, SDL_Rect *port)
 {
     // update velocity and store current angle
+    // gettin angle from hre is not working 
     //this->angle = getAngleFromVectors(this->pos, mousePos, vec2(0.0f, 0.0f));
     
     // accelerate up to max speed, then mantain it until stop pusing key
@@ -63,7 +64,7 @@ void Player::updatePos(float acceleration, vec2 mousePos, float dt, SDL_Rect *po
     {
         // stop accelerating
         this->velocity_mag = this->velocity_mag * (this->slowdownRate);
-        if (this->velocity_mag <= 0.05f)
+        if (this->velocity_mag <= 0.005f)
             this->velocity_mag = 0.0f; // final push
     }
     

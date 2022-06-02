@@ -51,10 +51,10 @@ float getAngleFromVectors(vec2 v1, vec2 v2, vec2 origin)
 {
     float radians;
 
-    float x1 = v1.x /*- origin.x*/;
-    float y1 = v1.y /*- origin.y*/;
-    float x2 = v2.x /* - x1*/;
-    float y2 = v2.y /*- y1*/;
+    float x1 = v1.x/* - origin.x*/;
+    float y1 = v1.y/* - origin.y*/;
+    float x2 = v2.x;
+    float y2 = v2.y;
     float magnitudeV1 = sqrt(x1 * x1 + y1 * y1);
     float magnitudeV2 = sqrt(x2 * x2 + y2 * y2);
     float dotProduct = v1 * v2;

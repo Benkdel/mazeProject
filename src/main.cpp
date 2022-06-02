@@ -221,18 +221,6 @@ void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *eve
                 case SDLK_ESCAPE:
                     window->windowShouldClose = true;
                     break;
-                /*case SDLK_w:
-                    keyBoard->velocity = 5.0f;
-                    break;
-                case SDLK_s:
-                    keyBoard->velocity = -5.0f;
-                    break;*/
-                case SDLK_LEFT:
-                    keyBoard->angle -= 5.0f;
-                    break;
-                case SDLK_RIGHT:
-                    keyBoard->angle += 5.0f;
-                    break;
                 case SDLK_p:
                     keyBoard->printData = true;
                     break;
@@ -248,10 +236,18 @@ void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *eve
     const uint8_t *currentKeyStates = SDL_GetKeyboardState(NULL);
     if (currentKeyStates[SDL_SCANCODE_W])
     {
-        keyBoard->acceleration = 0.005f;
+        keyBoard->acceleration = 0.0001f;
     }
     if (currentKeyStates[SDL_SCANCODE_S])
     {
-        keyBoard->acceleration = -0.005f;
+        keyBoard->acceleration = -0.0001f;
+    }
+    if (currentKeyStates[SDL_SCANCODE_LEFT])
+    {
+        keyBoard->angle -= 5.0f;
+    }
+    if (currentKeyStates[SDL_SCANCODE_RIGHT])
+    {
+        keyBoard->angle += 5.0f;
     }
 }
