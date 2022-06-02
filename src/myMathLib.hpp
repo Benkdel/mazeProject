@@ -1,7 +1,6 @@
 #ifndef MYMATHLIB_HPP
 #define MYMATHLIB_HPP
 
-
 #include "macros.hpp"
 
 class vec2
@@ -19,13 +18,14 @@ public:
     // overloading operators
     vec2 operator+(vec2 const &obj);
     vec2 operator-(vec2 const &obj);
-    vec2 operator*(vec2 const &obj);
+    float operator*(vec2 const &obj);
 
 };
 
 void normalizeVec(vec2 *vec, vec2 origin);
 vec2 getVecFromAngle(float magnitude, float angle);
 float distanceBtwPoints(vec2 p1, vec2 p2);
+float getAngleFromVectors(vec2 v1, vec2 v2, vec2 origin);
 
 template <typename T>
 T clamp(T value, T lower, T upper)
@@ -42,5 +42,26 @@ public:
     vec2 p1;
     vec2 p2;
 };
+
+
+class Triangle {
+public:
+
+    Triangle();
+
+    Triangle(vec2 p1, vec2 p2, vec2 p3);
+
+    vec2 p1;
+    vec2 p2;
+    vec2 p3;
+};
+
+// matrix transforms
+vec2 rotate2Dvec(vec2 v, float angle);
+vec2 scale2Dvec(vec2 v, float size);
+
+// utilities
+float deg2rad(float angle);
+float rad2deg(float radians);
 
 #endif

@@ -6,6 +6,13 @@
 #include <vector>
 #include "macros.hpp"
 
+
+class Cell {
+public:
+    SDL_Rect rect;
+    char value;
+};
+
 class Map {
 public:
     
@@ -24,7 +31,7 @@ public:
 
     SDL_Rect recWalls;
 
-    SDL_Rect mapCells[GRID_HEIGHT][GRID_WIDTH];
+    Cell mapCells[GRID_HEIGHT][GRID_WIDTH / 2];
     std::vector<SDL_Rect> innerWalls;
 
 };

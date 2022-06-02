@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-vec2::vec2(){}
+vec2::vec2() {}
 
 vec2::vec2(float _x, float _y)
     : x(_x), y(_y){};
@@ -23,15 +23,15 @@ vec2 vec2::operator-(vec2 const &obj)
     return res;
 }
 
-vec2 vec2::operator*(vec2 const &obj)
+float vec2::operator*(vec2 const &obj)
 {
-    vec2 res;
-    res.x = x * obj.x;
-    res.y = y * obj.y;
+    float res;
+    res = x * obj.x;
+    res += y * obj.y;
     return res;
 }
 
- void normalizeVec(vec2 *vec, vec2 origin)
+void normalizeVec(vec2 *vec, vec2 origin)
 {
     float x = vec->x - origin.x;
     float y = vec->y - origin.y;
@@ -47,10 +47,30 @@ vec2 vec2::operator*(vec2 const &obj)
     }
 }
 
- vec2 getVecFromAngle(float magnitude, float angle)
+float getAngleFromVectors(vec2 v1, vec2 v2, vec2 origin)
+{
+    float radians;
+
+    float x1 = v1.x /*- origin.x*/;
+    float y1 = v1.y /*- origin.y*/;
+    float x2 = v2.x /* - x1*/;
+    float y2 = v2.y /*- y1*/;
+    float magnitudeV1 = sqrt(x1 * x1 + y1 * y1);
+    float magnitudeV2 = sqrt(x2 * x2 + y2 * y2);
+    float dotProduct = v1 * v2;
+
+    if (magnitudeV1 != 0 && magnitudeV2 != 0)
+    {
+        radians = acos(dotProduct / (magnitudeV1 * magnitudeV2));
+        return rad2deg(radians);
+    }
+    return 0.0f;
+}
+
+vec2 getVecFromAngle(float magnitude, float angle)
 {
     vec2 result;
-    float radians = angle * (CONST_PI / 180);
+    float radians = deg2rad(angle);
 
     result.x = acos(radians) * magnitude;
     result.y = asin(radians) * magnitude;
@@ -58,7 +78,7 @@ vec2 vec2::operator*(vec2 const &obj)
     return result;
 }
 
- float distanceBtwPoints(vec2 p1, vec2 p2)
+float distanceBtwPoints(vec2 p1, vec2 p2)
 {
     float distX;
     float distY;
@@ -67,4 +87,42 @@ vec2 vec2::operator*(vec2 const &obj)
     distY = (p1.y - p1.y) * (p1.y - p2.y);
 
     return (sqrt(distX + distY));
+}
+
+vec2 rotate2Dvec(vec2 v, float angle)
+{
+    vec2 newVec;
+    float radians = deg2rad(angle);
+
+    newVec.x = v.x * cosf(radians) - v.y * sinf(radians);
+    newVec.y = v.x * sinf(radians) + v.y * cosf(radians);
+
+    return newVec;
+}
+
+vec2 scale2Dvec(vec2 v, float size)
+{
+    vec2 newVec;
+
+    newVec.x = v.x * size;
+    newVec.y = v.y * size;
+
+    return newVec;
+}
+
+Triangle::Triangle() {}
+
+Triangle::Triangle(vec2 p1, vec2 p2, vec2 p3)
+    : p1(p1), p2(p2), p3(p3)
+{
+}
+
+float deg2rad(float angle)
+{
+    return angle * (CONST_PI / 180);
+}
+
+float rad2deg(float radians)
+{
+    return radians * (180 / CONST_PI); 
 }

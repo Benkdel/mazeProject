@@ -41,3 +41,8 @@ bool Ray::cast(SDL_Rect wall)
     }
     return (false);
 }
+
+bool Ray::castDDD(Map *map)
+{
+    
+}

@@ -1,3 +1,7 @@
 #include "keyboard.hpp"
 
-Keyboard::Keyboard() {}
+Keyboard::Keyboard() {
+    this->velocity = 0.0f;
+    this->angle = 0.0f;
+    this->printData = false;
+}

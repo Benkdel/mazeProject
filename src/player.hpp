@@ -16,8 +16,7 @@ public:
 
     void init(Map *w);
 
-    void updateDir(vec2 dir);
-    void updatePos(vec2 pos);
+    void updatePos(float velocit, vec2 mousePos, float dt, SDL_Rect *port);
 
     void render(Window *w, SDL_Rect *port);
 
@@ -28,7 +27,19 @@ public:
     std::vector<Ray> rays;
 
     vec2 pos;
+    vec2 velocity;
+    vec2 lastVelocity; // debuging
     vec2 dir;
+
+    SDL_Rect box_collider;
+
+    // if we want to draw player as circle
+    float radius;
+    // as triangle:
+    Triangle triangle;
+    Triangle translTriangle; // for debugging
+
+    float angle;
 };
 
 #endif

@@ -8,8 +8,9 @@
 #include "player.hpp"
 #include "map.hpp"
 #include "scene.hpp"
+#include "collision.hpp"
 
-void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *event);
+void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *event, float deltaTime);
 void setMinimapPort(SDL_Rect *vp, unsigned int scr_W, unsigned int scr_H);
 void setWorldPort(SDL_Rect *vp, unsigned int scr_W, unsigned int scr_H);
 
@@ -41,6 +42,10 @@ int main(int argc, char **argv)
 
     float wallX, wallY, currentDistance, closestDistance;
 
+    unsigned int lastTime = 0;
+    unsigned int currentTime = 0;
+    float deltaTime = 0;
+
     /* IO */
     Mouse mouse;
     Keyboard keyboard;
@@ -65,8 +70,12 @@ int main(int argc, char **argv)
 
     while (!window.windowShouldClose)
     {
+        currentTime = SDL_GetTicks();
+        deltaTime = (float)(currentTime - lastTime);
+        lastTime = currentTime;
+
         // handle events on queue
-        pollEvents(&window, &mouse, &keyboard, &event);
+        pollEvents(&window, &mouse, &keyboard, &event, deltaTime);
 
         // Clear screen
         SDL_SetRenderDrawColor(window.renderer, 0, 1, 2, 1);
@@ -77,8 +86,28 @@ int main(int argc, char **argv)
         map.renderInnerWalls(&window, &miniMapVP);
 
         firstPlayer.render(&window, &miniMapVP);
-        firstPlayer.updateDir(vec2(mouse.position.x, mouse.position.y));
-        firstPlayer.updatePos(keyboard.pos);
+
+        // update player pos
+        vec2 mousePos = vec2(mouse.position.x, mouse.position.y);
+        firstPlayer.updatePos(keyboard.velocity, mousePos, deltaTime, &miniMapVP);
+        firstPlayer.angle = keyboard.angle;
+        // reset velocity
+        keyboard.velocity = 0.0f;
+        
+        vec2 collBoxpos = { (float)firstPlayer.box_collider.x, (float)firstPlayer.box_collider.y };
+        if (map_collision(firstPlayer.pos, &map, &miniMapVP, &window))
+        {
+            //std::cout << "collision detected!\n";
+        }
+
+        if (keyboard.printData)
+        {
+            std::cout << "Player pos == x: " << firstPlayer.pos.y << " y: " << firstPlayer.pos.y << "\n";
+            std::cout << "Player velocity == x: " << firstPlayer.lastVelocity.x << " y: " << firstPlayer.lastVelocity.y << "\n";
+            std::cout << "Player Top Point == x: " << firstPlayer.translTriangle.p2.x << " y: " << firstPlayer.translTriangle.p2.y << "\n";
+            std::cout << "Player angle: " << firstPlayer.angle << "\n";
+            keyboard.printData = false;
+        }
 
         hoverGrid = {(mouse.position.x / CELL_SIZE) * CELL_SIZE, (mouse.position.y / CELL_SIZE) * CELL_SIZE, CELL_SIZE, CELL_SIZE};
         SDL_RenderSetViewport(window.renderer, &miniMapVP);
@@ -96,7 +125,7 @@ int main(int argc, char **argv)
             for (j = 0; j < map.innerWalls.size(); j++)
             {
                 if (firstPlayer.rays[i].cast(map.innerWalls[j]))
-                {;
+                {
                     currentDistance = distanceBtwPoints(firstPlayer.rays[i].pos, firstPlayer.rays[i].hit);
 
                     // check all walls to see which is the nearest one
@@ -110,7 +139,7 @@ int main(int argc, char **argv)
             // then draw closest hit
             SDL_RenderSetViewport(window.renderer, &miniMapVP);
             SDL_SetRenderDrawColor(window.renderer, 255, 255, 255, 1);
-            SDL_RenderDrawLine(window.renderer, firstPlayer.pos.x, firstPlayer.pos.y, closestVec.x, closestVec.y);
+            //SDL_RenderDrawLine(window.renderer, firstPlayer.pos.x, firstPlayer.pos.y, closestVec.x, closestVec.y);
 
             // store hit to draw it in world view port
             line l;
@@ -126,6 +155,7 @@ int main(int argc, char **argv)
 
         scene.render(&window, &worldVP, scenePoints);
         scenePoints.clear();*/
+
         /* Update the surface */
         SDL_RenderPresent(window.renderer);
     }
@@ -163,7 +193,7 @@ void setWorldPort(SDL_Rect *vp, unsigned int scr_W, unsigned int scr_H)
     vp->h = scr_H;
 }
 
-void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *event)
+void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *event, float deltaTime)
 {
     int x, y;
 
@@ -180,28 +210,34 @@ void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *eve
             SDL_GetMouseState(&x, &y);
             mouse->setPosition(x, y);
         }
-    }
+    
+        // handle key downs
+        if (event->type == SDL_KEYDOWN)
+        {
+            switch (event->key.keysym.sym)
+            {
+                case SDLK_ESCAPE:
+                    window->windowShouldClose = true;
+                    break;
+                case SDLK_w:
+                    keyBoard->velocity = 5.0f;
+                    break;
+                case SDLK_s:
+                    keyBoard->velocity = -5.0f;
+                    break;
+                case SDLK_LEFT:
+                    keyBoard->angle -= 5.0f;
+                    break;
+                case SDLK_RIGHT:
+                    keyBoard->angle += 5.0f;
+                    break;
+                case SDLK_p:
+                    keyBoard->printData = true;
+                    break;
+                default:
+                    break;
+            }
+        }
 
-    vec2 Up = {0.0f, -5.0f};
-    vec2 down = {0.0f, 5.0f};
-    vec2 left = {-5.0f, 0.0f};
-    vec2 right = {5.0f, 0.0f};
-
-    const uint8_t *currentKeyStates = SDL_GetKeyboardState(NULL);
-    if (currentKeyStates[SDL_SCANCODE_W])
-    {
-        keyBoard->pos = keyBoard->pos + Up;
-    }
-    if (currentKeyStates[SDL_SCANCODE_S])
-    {
-        keyBoard->pos = keyBoard->pos + down;
-    }
-    if (currentKeyStates[SDL_SCANCODE_A])
-    {
-        keyBoard->pos = keyBoard->pos + left;
-    }
-    if (currentKeyStates[SDL_SCANCODE_D])
-    {
-        keyBoard->pos = keyBoard->pos + right;
     }
 }

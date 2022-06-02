@@ -12,6 +12,11 @@ public:
 
     uint8_t *currentKeyState;
     vec2 pos;
+
+    float velocity;
+    float angle;
+
+    bool printData;
 };
 
 
