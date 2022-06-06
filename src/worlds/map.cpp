@@ -8,7 +8,7 @@ Map::Map() {}
 
 void Map::setPerimeter(SDL_Rect *port)
 {
-    // store map values
+    // store map values(this->window->getWidth() - 1) / 2;
     this->x = 0;
     this->y = 0;
     this->w = port->w - this->x;

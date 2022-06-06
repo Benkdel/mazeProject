@@ -7,15 +7,14 @@
 #include <iostream>
 #include <cmath>
 
-
 /**
- * draw triangle 
- * 
- * 
+ * draw triangle
+ *
+ *
  */
 void drawTriangle(Window *w, Triangle t)
 {
-    SDL_RenderDrawLineF(w->renderer, t.p1.x, t.p1.y, t.p2.x, t.p2.y); //p1 to p2
+    SDL_RenderDrawLineF(w->renderer, t.p1.x, t.p1.y, t.p2.x, t.p2.y); // p1 to p2
     SDL_RenderDrawLineF(w->renderer, t.p2.x, t.p2.y, t.p3.x, t.p3.y); // p2 to p3
     SDL_RenderDrawLineF(w->renderer, t.p3.x, t.p3.y, t.p1.x, t.p1.y); // p3 to p1
 }
@@ -35,9 +34,6 @@ void Player::init(Map *w)
     this->verticalMaxSpeed = 2.0f;
     this->slowdownRate = 0.3f; // times delta time and final push should be 2f?
 
-    std::vector<Ray> vec(MAX_RAYS, Ray());
-    this->rays = vec;
-
     this->angle = 0.0f;
     this->radius = 6.0f * CONST_PI;
 
@@ -46,21 +42,21 @@ void Player::init(Map *w)
 
 void Player::updateCurrentAngle(float rotAngle)
 {
-    float totalRot = this->angle - rotAngle; // - because rot its applied clockwise
+    float totalRot = this->angle + rotAngle; // - because rot its applied clockwise
     if (totalRot < 0)
         totalRot = 360 - totalRot;
     if (totalRot > 360)
-        totalRot -= 360;
-
-    this->angle = totalRot; 
+        totalRot = totalRot - 360 + 0.01f;
+    
+    this->angle = totalRot;
 }
 
 void Player::updatePos(float acceleration, vec2 mousePos, float dt, SDL_Rect *port)
 {
     // update velocity and store current angle
-    // gettin angle from hre is not working 
-    //this->angle = getAngleFromVectors(this->pos, mousePos, vec2(0.0f, 0.0f));
-    
+    // gettin angle from hre is not working
+    // this->angle = getAngleFromVectors(this->pos, mousePos, vec2(0.0f, 0.0f));
+
     // accelerate up to max speed, then mantain it until stop pusing key
     if (acceleration != 0.0f)
     {
@@ -79,7 +75,7 @@ void Player::updatePos(float acceleration, vec2 mousePos, float dt, SDL_Rect *po
         if (this->velocity_mag <= 0.005f)
             this->velocity_mag = 0.0f; // final push
     }
-    
+
     // store last velocity magnitud:
     this->prevVelocity_mag = this->velocity_mag;
 
@@ -93,16 +89,16 @@ void Player::updatePos(float acceleration, vec2 mousePos, float dt, SDL_Rect *po
 
     float nextHorPos = this->pos.x + this->velocity.x * dt;
     float nextVerPos = this->pos.y + this->velocity.y * dt;
-    
+
     // update position and clamp it to the screen
     float limitX = (float)(port->x + port->w) - 25.0f;
     float limitY = (float)(port->y + port->h) - 50.0f;
-    
+
     if (nextHorPos <= 0.0f || nextHorPos >= limitX)
         this->velocity.x = 0.0f;
     if (nextVerPos >= limitY || nextVerPos <= 0.0f)
         this->velocity.y = 0.0f;
-   
+
     // Update lookAt
     if (this->pos.x >= 490.0f)
         std::cout << "Debug raycast \n\n";
@@ -128,8 +124,9 @@ void Player::render(Window *w, SDL_Rect *port)
     SDL_RenderSetViewport(w->renderer, port);
     SDL_SetRenderDrawColor(w->renderer, 255, 255, 51, 1);
     /*Circle c;
-    int32_t centerX = (int32_t)(this->pos.x /*+ CELL_SIZE / 2*///);
-    /*int32_t centerY = (int32_t)(this->pos.y /*+ CELL_SIZE / 2*///);
+    int32_t centerX = (int32_t)(this->pos.x /*+ CELL_SIZE / 2*/
+    //);
+    /*int32_t centerY = (int32_t)(this->pos.y /*+ CELL_SIZE / 2*/ //);
     /*c.drawCircle(w->renderer, centerX, centerY, this->radius);*/
 
     // transformations
@@ -156,25 +153,37 @@ void Player::render(Window *w, SDL_Rect *port)
     // draw triangle
     drawTriangle(w, transTriangle);
 
-    //draw line from player to triangle
+    // draw line from player to triangle
     SDL_RenderDrawLineF(w->renderer, (float)this->pos.x, (float)this->pos.y, transTriangle.p2.x, transTriangle.p2.y);
 }
 
 void Player::setUpRays()
-{
-    int i = 0;
-    std::vector<Ray>::iterator it = this->rays.begin();
-    std::vector<Ray>::iterator end = this->rays.end();
-
-    for (it; it != end; ++it)
+{   
+    for (int i = 0; i < MAX_RAYS; i++)
     {
-        it->pos = this->pos;
-        it->dir = getVecFromAngle(1, this->angle) + getVecFromAngle(100, i);
-        i++;
+        this->rays[i].pos = this->pos;
+        this->rays[i].dir = getVecFromAngle(1, this->angle) + getVecFromAngle(100, i);
+    }
+}
+
+void Player::rayCastDDD(Window *window, SDL_Rect *port, Map *map)
+{
+    HitResult hitResult;
+    for (int i = 0; i < MAX_RAYS; i++)
+    {
+        hitResult = this->rays[i].castDDD(this->pos, this->lookAt, map);
+
+        // then draw closest hit
+        SDL_RenderSetViewport(window->renderer, port);
+        if (hitResult.hit)
+            SDL_SetRenderDrawColor(window->renderer, 153, 0, 76, 1);
+        else
+            SDL_SetRenderDrawColor(window->renderer, 255, 255, 255, 1);
+        SDL_RenderDrawLine(window->renderer, this->pos.x, this->pos.y, hitResult.intersection.x, hitResult.intersection.y);
     }
 }
 
 void Player::clearRays()
 {
-    this->rays.clear();
+    //
 }

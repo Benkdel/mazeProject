@@ -2,13 +2,14 @@
 #define MOUSE_HPP
 
 #include <SDL.h>
+#include "../math/myMathLib.hpp"
 
 class Mouse {
 public:
     
     Mouse();
 
-    SDL_Point position;
+    vec2 position;
 
     void setPosition(int x, int y);
 

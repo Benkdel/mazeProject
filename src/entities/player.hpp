@@ -18,9 +18,10 @@ public:
     void updateCurrentAngle(float rotAngle);
     void render(Window *w, SDL_Rect *port);
     void setUpRays();
+    void rayCastDDD(Window *window, SDL_Rect *port, Map *map);
     void clearRays();
 
-    std::vector<Ray> rays;
+    Ray rays[MAX_RAYS];
 
     vec2 pos;
     vec2 velocity;
