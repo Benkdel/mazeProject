@@ -1,9 +1,14 @@
 #ifndef RAY_HPP
 #define RAY_HPP
 
-#include "myMathLib.hpp"
 #include <SDL.h>
+#include "myMathLib.hpp"
 #include "map.hpp"
+
+struct HitResult {
+    bool hit;
+    vec2 intersection;
+};
 
 class Ray {
 public:
@@ -14,7 +19,7 @@ public:
     Ray(vec2 pos, vec2 dir);
 
     bool cast(SDL_Rect wall);
-    bool castDDD(Map *map);
+    HitResult castDDD(vec2 pos, vec2 lookAt, Map *map);
 
     vec2 pos;
     vec2 dir;

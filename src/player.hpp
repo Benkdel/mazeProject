@@ -15,6 +15,7 @@ public:
     Player();
     void init(Map *w);
     void updatePos(float acceleration, vec2 mousePos, float dt, SDL_Rect *port);
+    void updateCurrentAngle(float rotAngle);
     void render(Window *w, SDL_Rect *port);
     void setUpRays();
     void clearRays();
@@ -23,6 +24,7 @@ public:
 
     vec2 pos;
     vec2 velocity;
+    vec2 lookAt;
 
     float horizontalMaxSpeed;
     float verticalMaxSpeed;

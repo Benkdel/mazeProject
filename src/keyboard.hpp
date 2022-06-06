@@ -18,6 +18,8 @@ public:
 
     float angle;
 
+    bool called;
+
     bool printData;
 };
 

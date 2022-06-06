@@ -23,6 +23,24 @@ vec2 vec2::operator-(vec2 const &obj)
     return res;
 }
 
+bool vec2::operator==(vec2 const &obj)
+{
+    vec2 res;
+    if (res.x == obj.x && res.y == obj.y)
+        return true;
+    else
+        return false;
+}
+
+bool vec2::operator!=(vec2 const &obj)
+{
+    vec2 res;
+    if (res.x != obj.x && res.y != obj.y)
+        return true;
+    else
+        return false;
+}
+
 float vec2::operator*(vec2 const &obj)
 {
     float res;
@@ -31,10 +49,11 @@ float vec2::operator*(vec2 const &obj)
     return res;
 }
 
-void normalizeVec(vec2 *vec, vec2 origin)
+vec2 normalizeVec(vec2 vec, vec2 origin)
 {
-    float x = vec->x - origin.x;
-    float y = vec->y - origin.y;
+    vec2 normVec;
+    float x = vec.x - origin.x;
+    float y = vec.y - origin.y;
     float magnitude;
 
     magnitude = sqrt(x * x + y * y);
@@ -42,9 +61,10 @@ void normalizeVec(vec2 *vec, vec2 origin)
     if (magnitude > 0)
     {
         // normalize vector:
-        vec->x /= magnitude;
-        vec->y /= magnitude;
+        normVec.x = vec.x / magnitude;
+        normVec.y = vec.y / magnitude;
     }
+    return normVec;
 }
 
 float getAngleFromVectors(vec2 v1, vec2 v2, vec2 origin)
@@ -72,8 +92,8 @@ vec2 getVecFromAngle(float magnitude, float angle)
     vec2 result;
     float radians = deg2rad(angle);
 
-    result.x = acos(radians) * magnitude;
-    result.y = asin(radians) * magnitude;
+    result.x = cosf(radians) * magnitude;
+    result.y = -sinf(radians) * magnitude;
 
     return result;
 }

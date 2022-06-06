@@ -26,6 +26,7 @@ void Player::init(Map *w)
 {
     this->pos = vec2(w->w / 2, w->h / 2);
     this->velocity = vec2(0.0f, 0.0f);
+    this->lookAt = vec2(this->pos.x + 1.0f, this->pos.y + 1.0f);
 
     this->velocity_mag = 0.0f;
     this->prevVelocity_mag = 0.0f;
@@ -37,10 +38,21 @@ void Player::init(Map *w)
     std::vector<Ray> vec(MAX_RAYS, Ray());
     this->rays = vec;
 
-    this->angle = 90.0f;
+    this->angle = 0.0f;
     this->radius = 6.0f * CONST_PI;
 
     this->triangle = Triangle(vec2(-2.5f, 2.5f), vec2(0.0f, -5.0f), vec2(2.5f, 2.5f));
+}
+
+void Player::updateCurrentAngle(float rotAngle)
+{
+    float totalRot = this->angle - rotAngle; // - because rot its applied clockwise
+    if (totalRot < 0)
+        totalRot = 360 - totalRot;
+    if (totalRot > 360)
+        totalRot -= 360;
+
+    this->angle = totalRot; 
 }
 
 void Player::updatePos(float acceleration, vec2 mousePos, float dt, SDL_Rect *port)
@@ -71,8 +83,8 @@ void Player::updatePos(float acceleration, vec2 mousePos, float dt, SDL_Rect *po
     // store last velocity magnitud:
     this->prevVelocity_mag = this->velocity_mag;
 
-    this->velocity.x = sinf(deg2rad(angle)) * this->velocity_mag;
-    this->velocity.y = -cosf(deg2rad(angle)) * this->velocity_mag; // screen is upside down, y0 up, y last down
+    this->velocity.x = cosf(deg2rad(angle)) * this->velocity_mag;
+    this->velocity.y = -sinf(deg2rad(angle)) * this->velocity_mag; // screen is upside down, y0 up, y last down
 
     if (this->velocity.x != 0)
         this->lastVelocity.x = this->velocity.x;
@@ -91,11 +103,13 @@ void Player::updatePos(float acceleration, vec2 mousePos, float dt, SDL_Rect *po
     if (nextVerPos >= limitY || nextVerPos <= 0.0f)
         this->velocity.y = 0.0f;
    
+    // Update lookAt
+    if (this->pos.x >= 490.0f)
+        std::cout << "Debug raycast \n\n";
+    this->lookAt = this->pos + getVecFromAngle(1.0f, this->angle);
+
     this->pos.x += velocity.x * dt;
     this->pos.y += velocity.y * dt;
-
-    //this->pos.x = clamp(this->pos.x, 10.0f, limitX);
-    //this->pos.y = clamp(this->pos.y, 10.0f, limitY);
 
     // update box collider
     this->box_collider.x = this->pos.x - this->radius * 7 / 10;

@@ -5,4 +5,5 @@ Keyboard::Keyboard() {
     this->angle = 0.0f;
     this->printData = false;
     this->acceleration = 0;
+    this->called = false;
 }
