@@ -2,13 +2,13 @@
 #include <vector>
 
 #include "macros.hpp"
-#include "window.hpp"
-#include "keyboard.hpp"
-#include "mouse.hpp"
-#include "player.hpp"
-#include "map.hpp"
-#include "scene.hpp"
-#include "collision.hpp"
+#include "sdl_engine/window.hpp"
+#include "io/keyboard.hpp"
+#include "io/mouse.hpp"
+#include "entities/player.hpp"
+#include "worlds/map.hpp"
+#include "scenes/scene.hpp"
+#include "physics/collision.hpp"
 
 void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *event, float deltaTime);
 void setMinimapPort(SDL_Rect *vp, unsigned int scr_W, unsigned int scr_H);

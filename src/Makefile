@@ -1,5 +1,6 @@
 #OBJS sepecifies wich files to compile as part of the project
-OBJS = main.cpp window.cpp map.cpp player.cpp ray.cpp mouse.cpp scene.cpp keyboard.cpp myMathLib.cpp collision.cpp
+# OBJS = main.cpp window.cpp map.cpp player.cpp ray.cpp mouse.cpp scene.cpp keyboard.cpp myMathLib.cpp collision.cpp
+OBJS = $(wildcard **/*.cpp) main.cpp
 
 #CC specifies compiler
 CC = g++

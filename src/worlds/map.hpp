@@ -2,9 +2,9 @@
 #define MAP_HPP
 
 #include <SDL.h>
-#include "window.hpp"
 #include <vector>
-#include "macros.hpp"
+#include "../sdl_engine/window.hpp"
+#include "../macros.hpp"
 
 
 class Cell {

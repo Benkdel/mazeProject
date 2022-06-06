@@ -2,10 +2,10 @@
 #define PLAYER_HPP
 
 #include <SDL.h>
-#include "window.hpp"
-#include "map.hpp"
-#include "myMathLib.hpp"
-#include "ray.hpp"
+#include "../sdl_engine/window.hpp"
+#include "../worlds/map.hpp"
+#include "../math/myMathLib.hpp"
+#include "../physics/ray.hpp"
 
 #include <vector>
 

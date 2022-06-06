@@ -1,7 +1,7 @@
 #ifndef KEYBOARD_HPP
 #define KEYBOARD_HPP
 
-#include "myMathLib.hpp"
+#include "../math/myMathLib.hpp"
 #include <stdint.h>
 #include <cstdint>
 

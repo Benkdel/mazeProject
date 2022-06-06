@@ -2,8 +2,8 @@
 #define RAY_HPP
 
 #include <SDL.h>
-#include "myMathLib.hpp"
-#include "map.hpp"
+#include "../math/myMathLib.hpp"
+#include "../worlds/map.hpp"
 
 struct HitResult {
     bool hit;

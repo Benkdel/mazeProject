@@ -2,8 +2,8 @@
 #define SCENE_HPP
 
 #include <SDL.h>
-#include "myMathLib.hpp"
-#include "window.hpp"
+#include "../math/myMathLib.hpp"
+#include "../sdl_engine/window.hpp"
 
 #include <vector>
 

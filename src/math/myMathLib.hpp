@@ -1,7 +1,7 @@
 #ifndef MYMATHLIB_HPP
 #define MYMATHLIB_HPP
 
-#include "macros.hpp"
+#include "../macros.hpp"
 
 #include <iostream>
 

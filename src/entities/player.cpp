@@ -1,6 +1,6 @@
 #include "player.hpp"
 
-#include "circle.hpp"
+#include "../shapes/circle.hpp"
 
 #include <algorithm>
 #include <iterator>
