@@ -11,6 +11,7 @@
 #include "physics/collision.hpp"
 
 #include "scenes/mainGame.hpp"
+#include "scenes/motionTests.hpp"
 
 void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *event, float deltaTime);
 
@@ -28,8 +29,9 @@ int main(int argc, char **argv)
 {
     SDL_Event event;
 
-    // set what application to run
-    const int app_choosed = 0;
+// =========== set what application to run =============
+    const int app_choosed = 1;
+// =====================================================
 
     // +1 so that the last grid lines fit in the
     const int SCREEN_WIDTH = (CELL_SIZE * GRID_WIDTH) + 1;
@@ -38,9 +40,9 @@ int main(int argc, char **argv)
     Window window(SCREEN_WIDTH, SCREEN_HEIGHT);
     Map map;
 
-    unsigned int lastTime = 0;
-    unsigned int currentTime = 0;
-    float deltaTime = 0;
+    unsigned int lastTime = 0.0f;
+    unsigned int currentTime = 0.0f;
+    float deltaTime = 0.0f;
 
     /* IO */
     Mouse mouse;
@@ -53,6 +55,12 @@ int main(int argc, char **argv)
         return (1);
     }
 
+    /* ================================== */
+    /* ===== RUN CHOOSEN APPLICATION ==== */
+    /* ================================== */
+    
+    SDL_SetRenderDrawBlendMode(window.renderer, SDL_BLENDMODE_BLEND);
+
     if (app_choosed == Application::Game)
     {
         MainGame mainGame(&window, &mouse, &keyboard);
@@ -61,7 +69,7 @@ int main(int argc, char **argv)
         while (!window.windowShouldClose)
         {
             currentTime = SDL_GetTicks();
-            deltaTime = (float)(currentTime - lastTime);
+            deltaTime = (float)(currentTime - lastTime) / 1000.0f;
             lastTime = currentTime;
 
             // handle events on queue
@@ -85,13 +93,43 @@ int main(int argc, char **argv)
 
     if (app_choosed == Application::TestMotion)
     {
-        
+        MotionTesting motionTesting(&window, &mouse, &keyboard);
+
+        while (!window.windowShouldClose)
+        {
+            currentTime = SDL_GetTicks();
+            deltaTime = (float)(currentTime - lastTime) / 1000.0f;
+            lastTime = currentTime;
+
+            // handle events on queue
+            pollEvents(&window, &mouse, &keyboard, &event, deltaTime);
+
+            // Clear screen
+            SDL_SetRenderDrawColor(window.renderer, 0, 1, 2, 1);
+            SDL_RenderClear(window.renderer);
+
+            motionTesting.render(deltaTime);
+            motionTesting.updatePos(deltaTime);
+
+            // reset velocity
+            keyboard.velocity = 0.0f;
+
+            /* Update the surface */
+            SDL_RenderPresent(window.renderer);
+        }
+
+        motionTesting.cleanup();
     }
 
     window.cleanup();
     return 0;
 }
 
+
+
+
+
+/* =============================================================================================== */
 void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *event, float deltaTime)
 {
     int x, y;
@@ -133,6 +171,12 @@ void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *eve
             case SDLK_4:
                 keyBoard->angle = 270.0f;
                 break;
+            case SDLK_f:
+                keyBoard->angle = 1.0f;
+                break;
+            case SDLK_g:
+                keyBoard->angle = -1.0f;
+                break;
             default:
                 break;
             }
@@ -145,13 +189,11 @@ void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *eve
     const uint8_t *currentKeyStates = SDL_GetKeyboardState(NULL);
     if (currentKeyStates[SDL_SCANCODE_W])
     {
-        keyBoard->called = true;
-        keyBoard->acceleration = 5.0f;
+        keyBoard->acceleration = 50.0f;
     }
     if (currentKeyStates[SDL_SCANCODE_S])
     {
-        keyBoard->called = true;
-        keyBoard->acceleration = -5.0f;
+        keyBoard->acceleration = -50.0f;
     }
     if (currentKeyStates[SDL_SCANCODE_LEFT])
     {

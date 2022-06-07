@@ -28,24 +28,16 @@ void Map::renderGrid(Window *w, SDL_Rect *port)
     SDL_RenderSetViewport(w->renderer, port);
 
     // render vertical lines
-    SDL_SetRenderDrawColor(w->renderer, 193, 193, 193, 1);
+    SDL_SetRenderDrawColor(w->renderer, 220, 236, 225, 50);
     for (x = CELL_SIZE; x < 1 + CELL_SIZE * GRID_WIDTH; x += CELL_SIZE)
     {
-        if (x == CELL_SIZE * (GRID_WIDTH - 1))
-        {
-            SDL_SetRenderDrawColor(w->renderer, 111, 149, 179, 1);
-        }
         SDL_RenderDrawLine(w->renderer, x, 0, x, this->h + CELL_SIZE);
     }
 
     // render horizontal lines
-    SDL_SetRenderDrawColor(w->renderer, 193, 193, 193, 1);
+    SDL_SetRenderDrawColor(w->renderer, 220, 236, 225, 50);
     for (y = CELL_SIZE; y < 1 + CELL_SIZE * GRID_HEIGHT; y += CELL_SIZE)
     {
-        if (y == CELL_SIZE * (GRID_HEIGHT - 1)) 
-        {
-            SDL_SetRenderDrawColor(w->renderer, 111, 149, 179, 1);
-        }
         SDL_RenderDrawLine(w->renderer, 0, y, this->w + CELL_SIZE, y);
     }
 }
@@ -94,7 +86,7 @@ void Map::renderInnerWalls(Window *w, SDL_Rect *port)
 
     // size of each cell map
     SDL_RenderSetViewport(w->renderer, port);
-    SDL_SetRenderDrawColor(w->renderer, 0, 255, 51, 1);
+    SDL_SetRenderDrawColor(w->renderer, 0, 255, 51, 255);
 
     this->innerWalls.clear();
     for (r; r < rows; r++)

@@ -71,10 +71,10 @@ float getAngleFromVectors(vec2 v1, vec2 v2, vec2 origin)
 {
     float radians;
 
-    float x1 = v1.x/* - origin.x*/;
-    float y1 = v1.y/* - origin.y*/;
-    float x2 = v2.x;
-    float y2 = v2.y;
+    float x1 = v1.x  - origin.x;
+    float y1 = v1.y  - origin.y;
+    float x2 = v2.x - origin.x;
+    float y2 = v2.y - origin.y;
     float magnitudeV1 = sqrt(x1 * x1 + y1 * y1);
     float magnitudeV2 = sqrt(x2 * x2 + y2 * y2);
     float dotProduct = v1 * v2;
@@ -84,7 +84,7 @@ float getAngleFromVectors(vec2 v1, vec2 v2, vec2 origin)
         radians = acos(dotProduct / (magnitudeV1 * magnitudeV2));
         return rad2deg(radians);
     }
-    return 0.0f;
+    return -123456.0f;
 }
 
 vec2 getVecFromAngle(float magnitude, float angle)
@@ -130,6 +130,13 @@ vec2 scale2Dvec(vec2 v, float size)
     return newVec;
 }
 
+line::line() {}
+
+line::line(vec2 p1, vec2 p2)
+    : p1(p1), p2(p2)
+{
+}
+
 Triangle::Triangle() {}
 
 Triangle::Triangle(vec2 p1, vec2 p2, vec2 p3)
@@ -144,5 +151,5 @@ float deg2rad(float angle)
 
 float rad2deg(float radians)
 {
-    return radians * (180 / CONST_PI); 
+    return radians * (180 / CONST_PI);
 }

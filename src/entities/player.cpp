@@ -30,8 +30,8 @@ void Player::init(Map *w)
     this->velocity_mag = 0.0f;
     this->prevVelocity_mag = 0.0f;
 
-    this->horizontalMaxSpeed = 1.0f;
-    this->verticalMaxSpeed = 2.0f;
+    this->horizontalMaxSpeed = 100.0f;
+    this->verticalMaxSpeed = 100.0f;
     this->slowdownRate = 0.3f; // times delta time and final push should be 2f?
 
     this->angle = 0.0f;
@@ -99,11 +99,6 @@ void Player::updatePos(float acceleration, vec2 mousePos, float dt, SDL_Rect *po
     if (nextVerPos >= limitY || nextVerPos <= 0.0f)
         this->velocity.y = 0.0f;
 
-    // Update lookAt
-    if (this->pos.x >= 490.0f)
-        std::cout << "Debug raycast \n\n";
-    this->lookAt = this->pos + getVecFromAngle(1.0f, this->angle);
-
     this->pos.x += velocity.x * dt;
     this->pos.y += velocity.y * dt;
 
@@ -122,7 +117,7 @@ void Player::render(Window *w, SDL_Rect *port)
 
     // draw player
     SDL_RenderSetViewport(w->renderer, port);
-    SDL_SetRenderDrawColor(w->renderer, 255, 255, 51, 1);
+    SDL_SetRenderDrawColor(w->renderer, 255, 255, 51, 255);
     /*Circle c;
     int32_t centerX = (int32_t)(this->pos.x /*+ CELL_SIZE / 2*/
     //);
@@ -139,9 +134,10 @@ void Player::render(Window *w, SDL_Rect *port)
     transTriangle.p3 = scale2Dvec(this->triangle.p3, size);
 
     // rotate
-    transTriangle.p1 = rotate2Dvec(transTriangle.p1, this->angle);
-    transTriangle.p2 = rotate2Dvec(transTriangle.p2, this->angle);
-    transTriangle.p3 = rotate2Dvec(transTriangle.p3, this->angle);
+    // im negating the angles to flip directions correclty
+    transTriangle.p1 = rotate2Dvec(transTriangle.p1, -this->angle);
+    transTriangle.p2 = rotate2Dvec(transTriangle.p2, -this->angle);
+    transTriangle.p3 = rotate2Dvec(transTriangle.p3, -this->angle);
 
     // translate
     transTriangle.p1 = transTriangle.p1 + this->pos;
@@ -152,6 +148,10 @@ void Player::render(Window *w, SDL_Rect *port)
 
     // draw triangle
     drawTriangle(w, transTriangle);
+
+
+    // update lookAt
+    this->lookAt = transTriangle.p2;
 
     // draw line from player to triangle
     SDL_RenderDrawLineF(w->renderer, (float)this->pos.x, (float)this->pos.y, transTriangle.p2.x, transTriangle.p2.y);
@@ -176,9 +176,9 @@ void Player::rayCastDDD(Window *window, SDL_Rect *port, Map *map)
         // then draw closest hit
         SDL_RenderSetViewport(window->renderer, port);
         if (hitResult.hit)
-            SDL_SetRenderDrawColor(window->renderer, 153, 0, 76, 1);
+            SDL_SetRenderDrawColor(window->renderer, 153, 0, 76, 255);
         else
-            SDL_SetRenderDrawColor(window->renderer, 255, 255, 255, 1);
+            SDL_SetRenderDrawColor(window->renderer, 255, 255, 255, 255);
         SDL_RenderDrawLine(window->renderer, this->pos.x, this->pos.y, hitResult.intersection.x, hitResult.intersection.y);
     }
 }

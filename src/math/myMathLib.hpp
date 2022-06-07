@@ -23,7 +23,6 @@ public:
     bool operator==(vec2 const &obj);
     bool operator!=(vec2 const &obj);
     float operator*(vec2 const &obj);
-
 };
 
 vec2 normalizeVec(vec2 vec, vec2 origin);
@@ -44,14 +43,17 @@ T clamp(T value, T lower, T upper)
 class line
 {
 public:
+    line();
+
+    line(vec2 p1, vec2 p2);
+
     vec2 p1;
     vec2 p2;
 };
 
-
-class Triangle {
+class Triangle
+{
 public:
-
     Triangle();
 
     Triangle(vec2 p1, vec2 p2, vec2 p3);
