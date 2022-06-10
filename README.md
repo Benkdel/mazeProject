@@ -1,4 +1,4 @@
-# Maze Porject using SDL and RayCasting, code in C
+# Maze Porject using SDL and RayCasting, code in C++
 
 
 # command to make file: mingw32-make.exe
@@ -22,15 +22,15 @@ the path where your mingW3 libs will be:
 
 Implemented:
 
-1- 2D raycasting with DDD
-2- boring triangle as player
-3- player scaling, rotation and translation (rotation still on arrow keys, tbu)
-4- simple map
+1 2D raycasting with DDD
+2 boring triangle as player
+3 player scaling, rotation and translation (rotation still on arrow keys, tbu)
+4 simple map
 
 Todo:
-1- collision detection
-2- render walls on world port based on rays
-3- implement textures
-4- fix outer walls
-5- implement models (such as guns, enemies, etc)
-6- implement mouse movement,  
+1 collision detection
+2 render walls on world port based on rays
+3 implement textures
+4 fix outer walls
+5 implement models (such as guns, enemies, etc)
+6 implement mouse movement
