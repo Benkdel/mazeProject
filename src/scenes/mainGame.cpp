@@ -1,5 +1,5 @@
 #include "mainGame.hpp"
-
+#include <iomanip>
 
 MainGame::MainGame(Window *window, Mouse *mouse, Keyboard *keyboard)
 : window(window), mouse(mouse), keyboard(keyboard) {
@@ -46,17 +46,11 @@ void MainGame::render(float dt)
     this->map.renderInnerWalls(this->window, &this->VPminimap);
     this->player.render(this->window, &this->VPminimap);
 
-    // update player position
-    this->player.updatePos(this->keyboard->acceleration, this->mouse->position, dt, &this->VPminimap);
-    
-    this->player.updateCurrentAngle(this->keyboard->angle);
-    this->keyboard->angle = 0.0f; // reset after applied
-
-    // set up rays
-    this->player.setUpRays();
+    // update player position and angle
+    this->player.updatePos(this->keyboard, dt);
+    this->player.updateCurrentAngle(this->keyboard, dt);
 
     this->player.rayCastDDD(this->window, &this->VPminimap, &this->map);
-
 
     if (this->keyboard->printData)
         this->debugging();
@@ -64,15 +58,19 @@ void MainGame::render(float dt)
 
 void MainGame::debugging()
 {
-    std::cout << "Player pos == x: " << this->player.pos.x << " y: " << this->player.pos.y << "\n";
-    std::cout << "Player velocity == x: " << this->player.lastVelocity.x << " y: " << this->player.lastVelocity.y << "\n";
-    std::cout << "Player Top Point == x: " << this->player.translTriangle.p2.x << " y: " << this->player.translTriangle.p2.y << "\n";
+    std::cout << "===============================================================================================\n";
+    std::cout << "Player pos => x: " << this->player.pos.x << " y: " << this->player.pos.y << "\n";
+    std::cout << "Top poing => x: " << this->player.triangle.p2.x << " y: " << this->player.triangle.p2.y << "\n";
     std::cout << "Player angle: " << this->player.angle << "\n";
     std::cout << "Player Acceleration: " << this->keyboard->acceleration << "\n";
-    std::cout << "Player current velocity: " << this->player.velocity_mag << "\n";
-    std::cout << "Player lookAt norm vector == x: " << this->player.lookAt.x << " y: " << this->player.lookAt.y << "\n"; 
-   
 
+    std::cout << "================< FoV Vectors >========================\n";
+    std::cout << " --  X  -- || --  Y  --\n";
+    for(int i = 0; i < MAX_RAYS; i++)
+    {
+        std::cout << " " << this->player.rays[i].rayDir.x << "     " << this->player.rays[i].rayDir.y << "\n";
+    }
+    
     this->keyboard->printData = false;
 }
 

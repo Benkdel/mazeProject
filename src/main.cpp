@@ -30,7 +30,7 @@ int main(int argc, char **argv)
     SDL_Event event;
 
 // =========== set what application to run =============
-    const int app_choosed = 1;
+    const int app_choosed = 0;
 // =====================================================
 
     // +1 so that the last grid lines fit in the

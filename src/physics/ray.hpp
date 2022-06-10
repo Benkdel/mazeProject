@@ -16,14 +16,9 @@ public:
     // Empty constructor
     Ray();
 
-    Ray(vec2 pos, vec2 dir);
-
-    bool cast(SDL_Rect wall);
     HitResult castDDD(vec2 pos, vec2 lookAt, Map *map);
 
-    vec2 pos;
-    vec2 dir;
-    vec2 hit;
+    vec2 rayDir;
 };
 
 #endif

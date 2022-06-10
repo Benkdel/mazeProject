@@ -28,7 +28,7 @@ public:
 vec2 normalizeVec(vec2 vec, vec2 origin);
 vec2 getVecFromAngle(float magnitude, float angle);
 float distanceBtwPoints(vec2 p1, vec2 p2);
-float getAngleFromVectors(vec2 v1, vec2 v2, vec2 origin);
+float getAngleFromVectors(vec2 v1, vec2 v2);
 
 template <typename T>
 T clamp(T value, T lower, T upper)

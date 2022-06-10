@@ -71,7 +71,7 @@ void MotionTesting::render(float dt)
 
     // update angle
     this->updateAngle(dt);
-    
+
     line tl1;
     vec2 lLeg;
     vec2 rLeg;
@@ -84,7 +84,6 @@ void MotionTesting::render(float dt)
     // scale legs by same size
     lLeg = scale2Dvec(this->leftLeg, size);
     rLeg = scale2Dvec(this->rightLeg, size);
-    
 
     // rotate line towards angle
     tl1.p1 = rotate2Dvec(tl1.p1, -this->angle);
@@ -99,9 +98,10 @@ void MotionTesting::render(float dt)
     tl1.p2 = tl1.p2 + this->centerPoint;
 
     // transform legs to center position
-    lLeg = lLeg + this->centerPoint; 
-    rLeg = rLeg + this->centerPoint; 
+    lLeg = lLeg + this->centerPoint;
+    rLeg = rLeg + this->centerPoint;
 
+    // replace with function of math lib
     float radians;
     float posX = tl1.p2.x - this->scr_W / 2;
     float posY = tl1.p2.y - this->scr_H / 2;
@@ -125,7 +125,6 @@ void MotionTesting::render(float dt)
     this->circle.drawCircle(this->window->renderer, (int32_t)lLeg.x, (int32_t)lLeg.y, (int32_t)this->radius);
     this->circle.drawCircle(this->window->renderer, (int32_t)rLeg.x, (int32_t)rLeg.y, (int32_t)this->radius);
     this->circle.drawCircle(this->window->renderer, (int32_t)tl1.p2.x, (int32_t)tl1.p2.y, (int32_t)this->radius);
-
 
     if (this->keyboard->printData)
     {

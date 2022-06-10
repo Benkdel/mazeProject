@@ -67,24 +67,14 @@ vec2 normalizeVec(vec2 vec, vec2 origin)
     return normVec;
 }
 
-float getAngleFromVectors(vec2 v1, vec2 v2, vec2 origin)
+float getAngleFromVectors(vec2 v1, vec2 v2)
 {
     float radians;
-
-    float x1 = v1.x  - origin.x;
-    float y1 = v1.y  - origin.y;
-    float x2 = v2.x - origin.x;
-    float y2 = v2.y - origin.y;
-    float magnitudeV1 = sqrt(x1 * x1 + y1 * y1);
-    float magnitudeV2 = sqrt(x2 * x2 + y2 * y2);
-    float dotProduct = v1 * v2;
-
-    if (magnitudeV1 != 0 && magnitudeV2 != 0)
-    {
-        radians = acos(dotProduct / (magnitudeV1 * magnitudeV2));
-        return rad2deg(radians);
-    }
-    return -123456.0f;
+    float adjacent = v2.x - v1.x;
+    float opposite = v2.y - v1.y;
+    radians = atan(opposite/adjacent);
+    
+    return rad2deg(radians);
 }
 
 vec2 getVecFromAngle(float magnitude, float angle)

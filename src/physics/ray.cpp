@@ -4,53 +4,10 @@
 
 Ray::Ray() {}
 
-Ray::Ray(vec2 pos, vec2 dir)
-    : pos(pos), dir(dir) {}
-
-bool Ray::cast(SDL_Rect wall)
-{
-    float t = -1; // must be betw 0 and 1
-    float u = -1; // must be > 0
-
-    // use wiky notation
-    const float x1 = wall.x;
-    const float y1 = wall.y;
-    const float x2 = wall.x + wall.w;
-    const float y2 = wall.y + wall.h;
-    const float x3 = this->pos.x;
-    const float y3 = this->pos.y;
-    const float x4 = this->dir.x;
-    const float y4 = this->dir.y;
-
-    float den;
-
-    den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-    if (den != 0)
-    {
-        t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / den;
-        u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / den;
-
-        if (t > 0 && t < 1 && u > 0)
-        {
-            this->hit.x = x1 + t * (x2 - x1);
-            this->hit.y = y1 + t * (y2 - y1);
-            return (true);
-        }
-        else
-        {
-            return (false);
-        }
-    }
-    return (false);
-}
-
 HitResult Ray::castDDD(vec2 pos, vec2 lookAt, Map *map)
 {
     vec2 rayStart = pos;
-    vec2 rayDir = normalizeVec(lookAt - pos, vec2(0.0f, 0.0f));
-
-    if (pos.x > 500.0f)
-        std::cout << "Debug RayCast ... \n\n";
+    vec2 rayDir = lookAt;
 
     // compute scaling factors of c when moving 1 unit in y, and same for 1 unit in x
     vec2 scalingFactors;
@@ -70,13 +27,13 @@ HitResult Ray::castDDD(vec2 pos, vec2 lookAt, Map *map)
 
     // manually calculate first length to closest cell
     if (step.x < 0)
-        rayLength2D.x = (rayStart.x - cell_X * CELL_SIZE) * scalingFactors.x;
+        rayLength2D.x = (rayStart.x - float(cell_X * CELL_SIZE)) * scalingFactors.x;
     else
-        rayLength2D.x = ((cell_X + 1) * CELL_SIZE - rayStart.x) * scalingFactors.x;
+        rayLength2D.x = (float((cell_X + 1) * CELL_SIZE) - rayStart.x) * scalingFactors.x;
     if (step.y < 0)
-        rayLength2D.y = (rayStart.y - cell_Y * CELL_SIZE) * scalingFactors.y;
+        rayLength2D.y = (rayStart.y - float(cell_Y * CELL_SIZE)) * scalingFactors.y;
     else
-        rayLength2D.y = ((cell_Y + 1) * CELL_SIZE - rayStart.y) * scalingFactors.y;
+        rayLength2D.y = (float((cell_Y + 1) * CELL_SIZE) - rayStart.y) * scalingFactors.y;
 
     // loop from start to length of the array
     bool tileFound = false;
@@ -89,18 +46,18 @@ HitResult Ray::castDDD(vec2 pos, vec2 lookAt, Map *map)
         {
             cell_X += step.x;
             totalDistance = rayLength2D.x;
-            rayLength2D.x += CELL_SIZE;
+            rayLength2D.x += float(scalingFactors.x * CELL_SIZE);
         }
         else
         {
             cell_Y += step.y;
             totalDistance = rayLength2D.y;
-            rayLength2D.y += CELL_SIZE;
+            rayLength2D.y += float(scalingFactors.y * CELL_SIZE);
         }
 
         if (cell_Y >= 0 && cell_X >= 0 && cell_Y <= map->h, cell_X <= map->w)
         {
-            if (map->mapCells[cell_Y, cell_X]->value == '#')
+            if (map->mapCells[cell_Y + 1][cell_X + 1].value == '#')
             {
                 tileFound = true;
             }
@@ -109,6 +66,8 @@ HitResult Ray::castDDD(vec2 pos, vec2 lookAt, Map *map)
 
     HitResult result;
     result.hit = false;
+
+    /* calculate intersection hit */
 
     result.intersection.x = rayStart.x + rayDir.x * totalDistance;
     result.intersection.y = rayStart.y + rayDir.y * totalDistance;
