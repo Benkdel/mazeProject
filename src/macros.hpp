@@ -12,7 +12,7 @@
 #define CELL_SIZE 32
 
 #define GRID_WIDTH 40
-#define GRID_HEIGHT 30
+#define GRID_HEIGHT 25
 
 #define FOV 60.0f
 

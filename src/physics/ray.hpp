@@ -19,6 +19,7 @@ public:
     HitResult castDDD(vec2 pos, vec2 lookAt, Map *map);
 
     vec2 rayDir;
+    float distance;
 };
 
 #endif

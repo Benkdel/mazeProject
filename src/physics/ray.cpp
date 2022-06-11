@@ -37,7 +37,7 @@ HitResult Ray::castDDD(vec2 pos, vec2 lookAt, Map *map)
 
     // loop from start to length of the array
     bool tileFound = false;
-    float maxDistance = 200.0f;
+    float maxDistance = 500.0f;
     float totalDistance = 0.0f;
     while (!tileFound && totalDistance < maxDistance)
     {
@@ -68,12 +68,12 @@ HitResult Ray::castDDD(vec2 pos, vec2 lookAt, Map *map)
     result.hit = false;
 
     /* calculate intersection hit */
-
     result.intersection.x = rayStart.x + rayDir.x * totalDistance;
     result.intersection.y = rayStart.y + rayDir.y * totalDistance;
 
     if (tileFound)
     {
+        this->distance = totalDistance;
         result.hit = true;
     }
     return result;

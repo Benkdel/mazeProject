@@ -31,14 +31,14 @@ void Map::renderGrid(Window *w, SDL_Rect *port)
     SDL_SetRenderDrawColor(w->renderer, 220, 236, 225, 50);
     for (x = CELL_SIZE; x < 1 + CELL_SIZE * GRID_WIDTH; x += CELL_SIZE)
     {
-        SDL_RenderDrawLine(w->renderer, x, 0, x, this->h + CELL_SIZE);
+        SDL_RenderDrawLine(w->renderer, x, 0, x, this->h);
     }
 
     // render horizontal lines
     SDL_SetRenderDrawColor(w->renderer, 220, 236, 225, 50);
     for (y = CELL_SIZE; y < 1 + CELL_SIZE * GRID_HEIGHT; y += CELL_SIZE)
     {
-        SDL_RenderDrawLine(w->renderer, 0, y, this->w + CELL_SIZE, y);
+        SDL_RenderDrawLine(w->renderer, 0, y, this->w, y);
     }
 }
 
@@ -51,34 +51,34 @@ void Map::renderInnerWalls(Window *w, SDL_Rect *port)
 
     std::string map_grid[GRID_HEIGHT] = {
         {"####################"},
-        {"#                  #"},
-        {"#                  #"},
-        {"#    ###############"},
-        {"#    #             #"},
-        {"#    #             #"},
-        {"#    #             #"},
-        {"#    #             #"},
-        {"#    #  ########   #"},
-        {"#    #  #      #   #"},
-        {"#    #  #   #  #   #"},
-        {"#    #  #   #  #   #"},
-        {"#    ####   #  #   #"},
-        {"#           #      #"},
-        {"#           ########"},
-        {"#                  #"},
-        {"#                  #"},
-        {"#                  #"},
-        {"#                  #"},        
-        {"#                  #"},        
-        {"#                  #"},        
-        {"#                  #"},        
-        {"#                  #"},        
-        {"#         #        #"},        
-        {"#     #####        #"},        
-        {"#                  #"},        
-        {"#                  #"},        
-        {"#         #####    #"},        
-        {"#                  #"},        
+        {"##                 #"},
+        {"##                 #"},
+        {"##   ###############"},
+        {"##   #             #"},
+        {"##   #             #"},
+        {"##   #             #"},
+        {"##   #             #"},
+        {"##   #  ########   #"},
+        {"##   #  #      #   #"},
+        {"##   #  #   #  #   #"},
+        {"##   #  #   #  #   #"},
+        {"##   ####   #  #   #"},
+        {"##          #      #"},
+        {"##          ########"},
+        {"##                 #"},
+        {"##                 #"},
+        {"##                 #"},
+        {"##                 #"},        
+        {"##                 #"},        
+        {"##                 #"},        
+        {"##                 #"},        
+        {"##                 #"},        
+        {"##        #        #"},        
+        //{"#     #####        #"},        
+        //{"#                  #"},        
+        //{"#                  #"},        
+        //{"#         #####    #"},        
+        //{"#                  #"},        
         {"####################"}};
 
     int x1, y1;
@@ -100,7 +100,6 @@ void Map::renderInnerWalls(Window *w, SDL_Rect *port)
 
             if (map_grid[r][c] == '#')
             {
-                this->innerWalls.push_back(this->mapCells[r][c].rect);
                 this->mapCells[r][c].value = '#';
                 SDL_RenderFillRect(w->renderer, &this->mapCells[r][c].rect);
             }

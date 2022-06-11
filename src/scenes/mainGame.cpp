@@ -1,13 +1,12 @@
 #include "mainGame.hpp"
-#include <iomanip>
 
 MainGame::MainGame(Window *window, Mouse *mouse, Keyboard *keyboard)
 : window(window), mouse(mouse), keyboard(keyboard) {
     
     // initialization
+    this->setMapPerimeter();
     this->setMinimapPort();
     this->setWorldPort();
-    this->setMapPerimeter();
 }
 
 void MainGame::setMinimapPort()
@@ -40,7 +39,7 @@ void MainGame::initEnemies()
     // nothing for now
 }
 
-void MainGame::render(float dt)
+void MainGame::renderMinimap(float dt)
 {
     this->map.renderGrid(this->window, &this->VPminimap);
     this->map.renderInnerWalls(this->window, &this->VPminimap);
@@ -56,6 +55,35 @@ void MainGame::render(float dt)
         this->debugging();
 }
 
+void MainGame::renderWorld(float dt)
+{
+    // render walls
+    
+    int wallWidth = this->VPworld.w / MAX_RAYS;
+    SDL_FRect wall;
+    vec2 fWall = vec2((float)(CELL_SIZE * 3), (float)(this->VPworld.h - CELL_SIZE));
+    
+    SDL_RenderSetViewport(this->window->renderer, &this->VPworld);
+    SDL_SetRenderDrawColor(this->window->renderer, 148, 173, 201, 255);
+
+    for (int i = 0; i < MAX_RAYS; i++)
+    {
+        // set current wall
+        float wallHeight = (float)(this->VPworld.h * CELL_SIZE) / this->player.rays[i].distance;
+        if (wallHeight > this->VPworld.h - 2 * CELL_SIZE) wallHeight = this->VPworld.h - 2 * CELL_SIZE;
+        wall.x = i * wallWidth;
+        wall.y = this->VPworld.h/2 - wallHeight/2;
+        wall.w = fWall.x + wallWidth;
+        wall.h = wallHeight;
+
+        // transalte into player X position
+        //wall.x += this->player.pos.x;
+        
+        // render current wall
+        SDL_RenderFillRectF(this->window->renderer, &wall);
+    }
+}
+
 void MainGame::debugging()
 {
     std::cout << "===============================================================================================\n";
@@ -69,6 +97,12 @@ void MainGame::debugging()
     for(int i = 0; i < MAX_RAYS; i++)
     {
         std::cout << " " << this->player.rays[i].rayDir.x << "     " << this->player.rays[i].rayDir.y << "\n";
+    }
+
+    std::cout << "================< distances >========================\n";
+    for(int i = 0; i < MAX_RAYS; i++)
+    {
+        std::cout << this->player.rays[i].distance << "\n";
     }
     
     this->keyboard->printData = false;

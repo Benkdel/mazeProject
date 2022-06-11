@@ -23,7 +23,7 @@ Player::Player() {}
 
 void Player::init(Map *w)
 {
-    this->pos = vec2(w->w / 2, w->h / 2);
+    this->pos = vec2(400.0f, 400.0f);
 
     this->angle = 0.0f; // because we start with the triangle pointing upwards
 
@@ -51,7 +51,6 @@ void Player::updateCurrentAngle(Keyboard *kb, float dt)
 
 void Player::updatePos(Keyboard *kb, float dt)
 {
-
     this->pos.x += cosf(deg2rad(this->angle)) * kb->acceleration * 5.0f * dt;
     this->pos.y += -sinf(deg2rad(this->angle)) * kb->acceleration * 5.0f * dt;
 

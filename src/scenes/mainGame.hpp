@@ -21,11 +21,13 @@ public:
     void initPlayers();
     void initEnemies();
 
-    void render(float dt);
+    void renderMinimap(float dt);
+    void renderWorld(float dt);
 
     void debugging();
 
     void cleanup();
+
 
 private:
     Window *window;
@@ -37,6 +39,8 @@ private:
 
     SDL_Rect VPminimap;
     SDL_Rect VPworld;
+
+    SDL_Rect tempSquare;
 
 };
 

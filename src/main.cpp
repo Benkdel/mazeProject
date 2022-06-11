@@ -28,7 +28,7 @@ enum Application
 int main(int argc, char **argv)
 {
     SDL_Event event;
-
+    
 // =========== set what application to run =============
     const int app_choosed = 0;
 // =====================================================
@@ -37,6 +37,7 @@ int main(int argc, char **argv)
     const int SCREEN_WIDTH = (CELL_SIZE * GRID_WIDTH) + 1;
     const int SCREEN_HEIGHT = (CELL_SIZE * GRID_HEIGHT) + 1;
 
+    
     Window window(SCREEN_WIDTH, SCREEN_HEIGHT);
     Map map;
 
@@ -79,7 +80,8 @@ int main(int argc, char **argv)
             SDL_SetRenderDrawColor(window.renderer, 0, 1, 2, 1);
             SDL_RenderClear(window.renderer);
 
-            mainGame.render(deltaTime);
+            mainGame.renderMinimap(deltaTime);
+            mainGame.renderWorld(deltaTime);
 
             // reset velocity
             keyboard.velocity = 0.0f;
@@ -124,9 +126,6 @@ int main(int argc, char **argv)
     window.cleanup();
     return 0;
 }
-
-
-
 
 
 /* =============================================================================================== */
