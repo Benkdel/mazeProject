@@ -1,5 +1,7 @@
 #include "mainGame.hpp"
 
+#include <cmath>
+
 MainGame::MainGame(Window *window, Mouse *mouse, Keyboard *keyboard)
 : window(window), mouse(mouse), keyboard(keyboard) {
     
@@ -57,9 +59,16 @@ void MainGame::renderMinimap(float dt)
 
 void MainGame::renderWorld(float dt)
 {
+    // render background
+    // load space texture in the back
+    // on top of that load floor textures
+
     // render walls
+    int nGallGroups = this->VPworld.w / MAX_RAYS;
+    int wallWidth = 3;
+    int wallsPerRay = nGallGroups / wallWidth;
+    float rayOffset = 0.0f;
     
-    int wallWidth = this->VPworld.w / MAX_RAYS;
     SDL_FRect wall;
     vec2 fWall = vec2((float)(CELL_SIZE * 3), (float)(this->VPworld.h - CELL_SIZE));
     
@@ -69,18 +78,29 @@ void MainGame::renderWorld(float dt)
     for (int i = 0; i < MAX_RAYS; i++)
     {
         // set current wall
-        float wallHeight = (float)(this->VPworld.h * CELL_SIZE) / this->player.rays[i].distance;
-        if (wallHeight > this->VPworld.h - 2 * CELL_SIZE) wallHeight = this->VPworld.h - 2 * CELL_SIZE;
-        wall.x = i * wallWidth;
-        wall.y = this->VPworld.h/2 - wallHeight/2;
-        wall.w = fWall.x + wallWidth;
-        wall.h = wallHeight;
 
-        // transalte into player X position
-        //wall.x += this->player.pos.x;
+        //fix fish eye
+        float aDist = this->player.rays[i].angle - this->player.angle;
+        aDist = (aDist < 0.0f) ? 360.0f + aDist : aDist;
+        aDist = (aDist > 360.0f) ? aDist - 360.0f + 0.0001f : aDist;
         
-        // render current wall
-        SDL_RenderFillRectF(this->window->renderer, &wall);
+        float modDistance = this->player.rays[i].distance * cos(deg2rad(aDist));
+
+        float wallHeight = (float)(this->VPworld.h * CELL_SIZE) / modDistance;
+        if (wallHeight > this->VPworld.h - 2 * CELL_SIZE) wallHeight = this->VPworld.h - 2 * CELL_SIZE;
+            
+        // draw multiple walls per ray
+        for (int j = 0; j < wallsPerRay; j++)
+        {
+            wall.x = i * wallWidth + (j * wallWidth) + rayOffset;
+            wall.y = this->VPworld.h/2 - wallHeight/2;
+            wall.w = wallWidth;
+            wall.h = wallHeight;
+            
+            // render current wall
+            SDL_RenderFillRectF(this->window->renderer, &wall);
+        }
+        rayOffset += (wallsPerRay - 1) * wallWidth;
     }
 }
 

@@ -20,6 +20,7 @@ public:
 
     vec2 rayDir;
     float distance;
+    float angle;
 };
 
 #endif

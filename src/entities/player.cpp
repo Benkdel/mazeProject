@@ -108,7 +108,8 @@ void Player::render(Window *w, SDL_Rect *port)
 
     for (int i = 0; i < MAX_RAYS; i++)
     {
-        this->rays[i].rayDir = getVecFromAngle(1.0f, fAngle + (float)i);
+        this->rays[i].angle = fAngle + (float)i; // store angle to use later
+        this->rays[i].rayDir = getVecFromAngle(1.0f, this->rays[i].angle);
     }
 
     // draw triangle
