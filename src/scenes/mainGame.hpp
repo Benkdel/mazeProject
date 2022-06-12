@@ -3,6 +3,7 @@
 
 #include "../macros.hpp"
 #include "../sdl_engine/window.hpp"
+#include "../sdl_engine/texture.hpp"
 #include "../io/keyboard.hpp"
 #include "../io/mouse.hpp"
 #include "../entities/player.hpp"
@@ -33,6 +34,7 @@ private:
     Window *window;
     Mouse *mouse;
     Keyboard *keyboard;
+    Texture *texture;
 
     Map map;
     Player player;

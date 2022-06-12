@@ -9,6 +9,10 @@ MainGame::MainGame(Window *window, Mouse *mouse, Keyboard *keyboard)
     this->setMapPerimeter();
     this->setMinimapPort();
     this->setWorldPort();
+
+    // Init texture obj and load textures
+    this->texture = new Texture();
+    this->texture->load(this->window, "../assets/images/space_1.png");
 }
 
 void MainGame::setMinimapPort()
@@ -59,9 +63,15 @@ void MainGame::renderMinimap(float dt)
 
 void MainGame::renderWorld(float dt)
 {
+    SDL_RenderSetViewport(this->window->renderer, &this->VPworld);
+    
     // render background
-    // load space texture in the back
+    this->texture->render(this->window, 0, 0);
+
     // on top of that load floor textures
+    SDL_SetRenderDrawColor(this->window->renderer, 138, 127, 74, 255);
+    SDL_Rect floor = { 0, this->VPworld.h / 2, this->VPworld.w, this->VPworld.h / 2 };
+    SDL_RenderFillRect(this->window->renderer, &floor);
 
     // render walls
     int nGallGroups = this->VPworld.w / MAX_RAYS;
@@ -72,7 +82,6 @@ void MainGame::renderWorld(float dt)
     SDL_FRect wall;
     vec2 fWall = vec2((float)(CELL_SIZE * 3), (float)(this->VPworld.h - CELL_SIZE));
     
-    SDL_RenderSetViewport(this->window->renderer, &this->VPworld);
     SDL_SetRenderDrawColor(this->window->renderer, 148, 173, 201, 255);
 
     for (int i = 0; i < MAX_RAYS; i++)
