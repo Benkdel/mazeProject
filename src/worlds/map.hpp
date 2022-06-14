@@ -24,15 +24,11 @@ public:
     unsigned int w;
     unsigned int h;
     
-    void setPerimeter(SDL_Rect *port);
-
-    void renderGrid(Window *w, SDL_Rect *port);
-    void renderInnerWalls(Window *w, SDL_Rect *port);
+    void setWalls();
+    void renderMiniMap(Window *w, SDL_Rect *VPminimap, SDL_Rect *VPworld);
 
     SDL_Rect recWalls;
-
-    Cell mapCells[GRID_HEIGHT][GRID_WIDTH / 2];
-    std::vector<SDL_Rect> innerWalls;
+    Cell mapCells[GRID_HEIGHT][GRID_WIDTH];
 
 };
 

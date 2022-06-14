@@ -4,7 +4,7 @@
 
 Ray::Ray() {}
 
-HitResult Ray::castDDD(vec2 pos, vec2 lookAt, Map *map)
+void Ray::castDDD(vec2 pos, vec2 lookAt, Map *map)
 {
     vec2 rayStart = pos;
     vec2 rayDir = lookAt;
@@ -37,7 +37,7 @@ HitResult Ray::castDDD(vec2 pos, vec2 lookAt, Map *map)
 
     // loop from start to length of the array
     bool tileFound = false;
-    float maxDistance = 500.0f;
+    float maxDistance = MAX_RAY_LENGTH;
     float totalDistance = 0.0f;
     while (!tileFound && totalDistance < maxDistance)
     {
@@ -47,12 +47,14 @@ HitResult Ray::castDDD(vec2 pos, vec2 lookAt, Map *map)
             cell_X += step.x;
             totalDistance = rayLength2D.x;
             rayLength2D.x += float(scalingFactors.x * CELL_SIZE);
+            this->results.HitDir = 0; // horizontal hit
         }
         else
         {
             cell_Y += step.y;
             totalDistance = rayLength2D.y;
             rayLength2D.y += float(scalingFactors.y * CELL_SIZE);
+            this->results.HitDir = 1; // vertical hit
         }
 
         if (cell_Y >= 0 && cell_X >= 0 && cell_Y <= map->h, cell_X <= map->w)
@@ -64,17 +66,13 @@ HitResult Ray::castDDD(vec2 pos, vec2 lookAt, Map *map)
         }
     }
 
-    HitResult result;
-    result.hit = false;
-
     /* calculate intersection hit */
-    result.intersection.x = rayStart.x + rayDir.x * totalDistance;
-    result.intersection.y = rayStart.y + rayDir.y * totalDistance;
+    this->results.intersection.x = rayStart.x + rayDir.x * totalDistance;
+    this->results.intersection.y = rayStart.y + rayDir.y * totalDistance;
 
     if (tileFound)
     {
         this->distance = totalDistance;
-        result.hit = true;
+        this->results.hit = true;
     }
-    return result;
 }

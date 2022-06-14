@@ -1,5 +1,5 @@
-#ifndef MOTIONTESTS_HPP
-#define MOTIONTESTS_HPP
+#ifndef TESTS_HPP
+#define TESTS_HPP
 
 #include "../sdl_engine/window.hpp"
 #include "../math/myMathLib.hpp"
@@ -8,10 +8,10 @@
 #include "../io/mouse.hpp"
 #include "../shapes/circle.hpp"
 
-class MotionTesting {
+class TestsModule {
 public:
 
-    MotionTesting(Window *window, Mouse *mouse, Keyboard *keyboard);
+    TestsModule(Window *window, Mouse *mouse, Keyboard *keyboard);
 
     void setPort();
 

@@ -7,18 +7,17 @@
 #include "io/mouse.hpp"
 #include "entities/player.hpp"
 #include "worlds/map.hpp"
-#include "scenes/scene.hpp"
 #include "physics/collision.hpp"
 
 #include "scenes/mainGame.hpp"
-#include "scenes/motionTests.hpp"
+#include "scenes/tests.hpp"
 
 void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *event, float deltaTime);
 
 enum Application
 {
     Game = 0,
-    TestMotion
+    Tests
 };
 
 /**
@@ -33,11 +32,9 @@ int main(int argc, char **argv)
     const int app_choosed = 0;
 // =====================================================
 
-    // +1 so that the last grid lines fit in the
-    const int SCREEN_WIDTH = (CELL_SIZE * GRID_WIDTH) + 1;
-    const int SCREEN_HEIGHT = (CELL_SIZE * GRID_HEIGHT) + 1;
+    const int SCREEN_WIDTH = CELL_SIZE * GRID_WIDTH;
+    const int SCREEN_HEIGHT = CELL_SIZE * GRID_HEIGHT;
 
-    
     Window window(SCREEN_WIDTH, SCREEN_HEIGHT);
     Map map;
 
@@ -80,8 +77,8 @@ int main(int argc, char **argv)
             SDL_SetRenderDrawColor(window.renderer, 0, 1, 2, 1);
             SDL_RenderClear(window.renderer);
 
-            mainGame.renderMinimap(deltaTime);
             mainGame.renderWorld(deltaTime);
+            mainGame.renderMinimap(deltaTime);
 
             // reset velocity
             keyboard.velocity = 0.0f;
@@ -93,9 +90,9 @@ int main(int argc, char **argv)
         mainGame.cleanup();
     }
 
-    if (app_choosed == Application::TestMotion)
+    if (app_choosed == Application::Tests)
     {
-        MotionTesting motionTesting(&window, &mouse, &keyboard);
+        TestsModule motionTesting(&window, &mouse, &keyboard);
 
         while (!window.windowShouldClose)
         {
@@ -194,6 +191,17 @@ void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *eve
     {
         keyBoard->acceleration = -50.0f;
     }
+    // implement strafing TODO
+
+    /*if (currentKeyStates[SDL_SCANCODE_W])
+    {
+        keyBoard->acceleration = 50.0f;
+    }
+    if (currentKeyStates[SDL_SCANCODE_S])
+    {
+        keyBoard->acceleration = -50.0f;
+    }*/
+
     if (currentKeyStates[SDL_SCANCODE_LEFT])
     {
         keyBoard->angle = -5.0f;

@@ -1,7 +1,9 @@
 #include "texture.hpp"
-#include <iostream>
 
-Texture::Texture() 
+#include <iostream>
+#include <string.h>
+
+Texture::Texture()
 {
     this->tex = NULL;
     this->w = 0;
@@ -18,30 +20,51 @@ void Texture::load(Window *w, const char *filePath)
 {
     // free prev texture
     this->cleanup();
-    
-    SDL_Surface *loadedSurface = IMG_Load(filePath);
 
+    // The final texture
+    SDL_Texture *newTexture = NULL;
+
+    SDL_Surface *loadedSurface = IMG_Load(filePath);
     if (loadedSurface == NULL)
     {
         std::cout << "Unable to load image " << filePath << " SDL_image Error: " << IMG_GetError();
         return;
     }
 
-    // color key image
-    SDL_SetColorKey(loadedSurface, SDL_TRUE, SDL_MapRGB(loadedSurface->format, 0, 0, 0));
-
-    // create texture from suf pixels
-    this->tex = SDL_CreateTextureFromSurface(w->renderer, loadedSurface);
-    if (this->tex == NULL)
+    // convert surface to display format
+    SDL_Surface *formattedSurface = SDL_ConvertSurfaceFormat(loadedSurface, SDL_GetWindowPixelFormat(w->window), 0);
+    if (formattedSurface == NULL)
     {
-        std::cout << "Unable to create texture from " << filePath << " SDL Error: " << SDL_GetError();
-        SDL_FreeSurface(loadedSurface);
+        std::cout << "Unable to convert loaded surface to display format SDL_image Error: " << SDL_GetError();
         return;
     }
 
-    this->w = loadedSurface->w;
-    this->h = loadedSurface->h;
+    // create texture from suf pixels
+    newTexture = SDL_CreateTexture(w->renderer, SDL_GetWindowPixelFormat(w->window), SDL_TEXTUREACCESS_STREAMING, formattedSurface->w, formattedSurface->h);
+    if (newTexture == NULL)
+    {
+        std::cout << "Unable to create blank texture SDL Error: " << SDL_GetError();
+        return;
+    }
+
+    // lock texture for manipulation
+    SDL_LockTexture(newTexture, NULL, &this->pixels, &this->pitch);
+
+    // copy loaded/formatted surface pixels
+    memcpy(this->pixels, formattedSurface->pixels, formattedSurface->pitch * formattedSurface->h);
+
+    // Unlock texture to update
+    SDL_UnlockTexture(newTexture);
+    this->pixels = NULL;
+
+    this->w = formattedSurface->w;
+    this->h = formattedSurface->h;
     this->status = true;
+    this->tex = newTexture;
+
+    // clean memory
+    SDL_FreeSurface(formattedSurface);
+    SDL_FreeSurface(loadedSurface);
 }
 
 void Texture::cleanup()
@@ -75,4 +98,37 @@ void Texture::render(Window *w, int x, int y)
     renderQuad.h = this->h;
 
     SDL_RenderCopy(w->renderer, this->tex, NULL, &renderQuad);
+}
+
+bool Texture::lockTexture()
+{
+    if (this->pixels != NULL)
+    {
+        std::cout << "Texture is already locked \n";
+        return false;
+    }
+    else
+    {
+        if (SDL_LockTexture(this->tex, NULL, &this->pixels, &this->pitch) != 0)
+        {
+            std::cout << "Unable to lock textures " << SDL_GetError() << "\n";
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Texture::unlockTexture()
+{
+    if (this->pixels == NULL)
+    {
+        std::cout << "Texture is not locked \n";
+        return false;
+    }
+    else
+    {
+        SDL_UnlockTexture(this->tex);
+        this->pixels = NULL;
+        this->pitch = 0;
+    }
 }

@@ -8,6 +8,7 @@
 struct HitResult {
     bool hit;
     vec2 intersection;
+    int HitDir;
 };
 
 class Ray {
@@ -16,8 +17,9 @@ public:
     // Empty constructor
     Ray();
 
-    HitResult castDDD(vec2 pos, vec2 lookAt, Map *map);
+    void castDDD(vec2 pos, vec2 lookAt, Map *map);
 
+    HitResult results;
     vec2 rayDir;
     float distance;
     float angle;

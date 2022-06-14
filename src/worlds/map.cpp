@@ -6,107 +6,120 @@
 
 Map::Map() {}
 
-void Map::setPerimeter(SDL_Rect *port)
-{
-    // store map values(this->window->getWidth() - 1) / 2;
-    this->x = 0;
-    this->y = 0;
-    this->w = port->w - this->x;
-    this->h = port->h - this->y;
 
-    // set SDL rect points
-    this->recWalls.x = this->x;
-    this->recWalls.y = this->y;
-    this->recWalls.w = this->w;
-    this->recWalls.h = this->h;
-}
-
-void Map::renderGrid(Window *w, SDL_Rect *port)
+void Map::renderMiniMap(Window *w, SDL_Rect *VPminimap, SDL_Rect *VPworld)
 {
+    // render grid
     int x, y;
 
-    SDL_RenderSetViewport(w->renderer, port);
+    SDL_RenderSetViewport(w->renderer, VPminimap);
 
     // render vertical lines
-    SDL_SetRenderDrawColor(w->renderer, 220, 236, 225, 50);
-    for (x = CELL_SIZE; x < 1 + CELL_SIZE * GRID_WIDTH; x += CELL_SIZE)
+    SDL_SetRenderDrawColor(w->renderer, 220, 236, 225, 100);
+
+    float xConvRatio = ((float)VPminimap->w / (float)VPworld->w);
+    float yConvratio = ((float)VPminimap->h / (float)VPworld->h);
+    
+    float cellWidth = (float)CELL_SIZE * xConvRatio;
+    float cellHeight = (float)CELL_SIZE * yConvratio;
+
+    for (x = cellWidth; x < 1 + cellWidth * GRID_WIDTH; x += cellWidth)
     {
-        SDL_RenderDrawLine(w->renderer, x, 0, x, this->h);
+        SDL_RenderDrawLineF(w->renderer, x, 0, x, VPminimap->h);
     }
 
     // render horizontal lines
-    SDL_SetRenderDrawColor(w->renderer, 220, 236, 225, 50);
-    for (y = CELL_SIZE; y < 1 + CELL_SIZE * GRID_HEIGHT; y += CELL_SIZE)
+    SDL_SetRenderDrawColor(w->renderer, 220, 236, 225, 100);
+    for (y = cellHeight; y < 1 + cellHeight * GRID_HEIGHT; y += cellHeight)
     {
-        SDL_RenderDrawLine(w->renderer, 0, y, this->w, y);
+        SDL_RenderDrawLineF(w->renderer, 0, y, VPminimap->w, y);
+    }
+
+    // render walls
+    SDL_SetRenderDrawColor(w->renderer, 0, 204, 204, 255);
+    SDL_Rect worldCell;
+    for (int r = 0; r < GRID_HEIGHT; r++)
+    {
+        for (int c = 0; c < GRID_WIDTH; c++)
+        {
+            if (mapCells[r][c].value == '#')
+            {
+                worldCell = mapCells[r][c].rect;
+                worldCell.x *= xConvRatio;
+                worldCell.y *= yConvratio;
+                worldCell.w = cellWidth;
+                worldCell.h = cellHeight;
+                SDL_RenderFillRect(w->renderer, &worldCell);
+            }
+        }
     }
 }
 
-void Map::renderInnerWalls(Window *w, SDL_Rect *port)
+void Map::setWalls()
 {
-    // this map is for the view port, adjust columns and rows
-    // to match it
-    float columns = port->w / CELL_SIZE;
+    // set perimeter
+    this->x = 0;
+    this->y = 0;
+    this->w = GRID_WIDTH * CELL_SIZE;
+    this->h = GRID_HEIGHT * CELL_SIZE;
+
+    // set map
+    float columns = GRID_WIDTH;
     float rows = GRID_HEIGHT;
 
     std::string map_grid[GRID_HEIGHT] = {
-        {"####################"},
-        {"##                 #"},
-        {"##                 #"},
-        {"##   ###############"},
-        {"##   #             #"},
-        {"##   #             #"},
-        {"##   #             #"},
-        {"##   #             #"},
-        {"##   #  ########   #"},
-        {"##   #  #      #   #"},
-        {"##   #  #   #  #   #"},
-        {"##   #  #   #  #   #"},
-        {"##   ####   #  #   #"},
-        {"##          #      #"},
-        {"##     #    ########"},
-        {"##     #           #"},
-        {"##     #           #"},
-        {"##  #########      #"},
-        {"##          #      #"},
-        {"##    #     #      #"},
-        {"##    #     #      #"},
-        {"##    ##### ####   #"},
-        //{"##                 #"},
-        //{"##        #        #"},
-        //{"##    #####        #"},
-        //{"##                 #"},
-        //{"##                 #"},
-        {"##        #####    #"},
-        {"##                 #"},
-        {"####################"}};
-
+        {" ######################################"},
+        {" #        #              #            #"},
+        {" #        #                     #     #"},
+        {" #             #      #     #   #     #"},
+        {" #   #   ##############     #   #     #"},
+        {" #   #     #          #     #   #     #"},
+        {" #   #     #    #     #     #   #     #"},
+        {" #   #          #     #     #   #     #"},
+        {" #   #  #########     #######   #######"},
+        {" #   #  #       #                     #"},
+        {" #   #  #   #   #      ################"},
+        {" #   #  #   # # #                     #"},
+        {" #                   #                #"},
+        {" #                  #                 #"},
+        {" #################################    #"},
+        {" #     #              #               #"},
+        {" #     #         #                 ## #"},
+        {" #  #########    #    #############   #"},
+        {" #          #    #    #        #      #"},
+        {" #    #     #    #    #        #    ###"},
+        {" #    #     #         #        #      #"},
+        {" #    ##### ####      #        ####   #"},
+        {" #                    #        #      #"},
+        {" #        #     #######        #    ###"},
+        {" #    #####           #        #      #"},
+        {" #           ####     #        ####   #"},
+        {" #                    ##########      #"},
+        {" #        #####            #          #"},
+        {" #                    #               #"},
+        {" ######################################"}};
+    
     int x1, y1;
     int r = 0, lR = 0, c = 0, lC = 0;
 
-    // size of each cell map
-    SDL_RenderSetViewport(w->renderer, port);
-    SDL_SetRenderDrawColor(w->renderer, 0, 255, 51, 255);
-
-    this->innerWalls.clear();
     for (r; r < rows; r++)
     {
         for (c; c < columns; c++)
         {
             x1 = lC * CELL_SIZE;
             y1 = lR * CELL_SIZE;
+            
             this->mapCells[r][c].rect = {x1, y1, CELL_SIZE, CELL_SIZE};
-            this->mapCells[r][c].value = ' ';
-
+            
             if (map_grid[r][c] == '#')
-            {
                 this->mapCells[r][c].value = '#';
-                SDL_RenderFillRect(w->renderer, &this->mapCells[r][c].rect);
-            }
+            else
+                this->mapCells[r][c].value = ' ';
+
             lC = c;
         }
         lC = 0;
-        c = 1;
+        c = 0;
         lR = r;
     }
 }

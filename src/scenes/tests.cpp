@@ -1,12 +1,13 @@
-#include "motionTests.hpp"
+#include "tests.hpp"
+
+#include "../sdl_engine/texture.hpp"
 
 #include <cmath>
 
-MotionTesting::MotionTesting(Window *window, Mouse *mouse, Keyboard *keyboard)
+TestsModule::TestsModule(Window *window, Mouse *mouse, Keyboard *keyboard)
     : window(window), mouse(mouse), keyboard(keyboard)
 {
     this->setPort();
-    this->setMapPerimeter();
 
     this->scr_W = this->window->getWidth();
     this->scr_H = this->window->getHeight();
@@ -26,7 +27,7 @@ MotionTesting::MotionTesting(Window *window, Mouse *mouse, Keyboard *keyboard)
     this->radius = 2.0f * CONST_PI;
 }
 
-void MotionTesting::setPort()
+void TestsModule::setPort()
 {
     this->VPscreen.x = 0;
     this->VPscreen.y = 0;
@@ -34,12 +35,7 @@ void MotionTesting::setPort()
     this->VPscreen.h = this->window->getHeight();
 }
 
-void MotionTesting::setMapPerimeter()
-{
-    this->map.setPerimeter(&this->VPscreen);
-}
-
-void MotionTesting::updateAngle(float dt)
+void TestsModule::updateAngle(float dt)
 {
     // update angle correctly
     float rotation = 50.0f * this->keyboard->angle * dt;
@@ -55,7 +51,7 @@ void MotionTesting::updateAngle(float dt)
         this->angle = this->angle - 360.0f + 0.00000001f;
 }
 
-void MotionTesting::updatePos(float dt)
+void TestsModule::updatePos(float dt)
 {
     // apply motion
     this->centerPoint.x += cosf(deg2rad(this->angle)) * keyboard->acceleration * 5.0f * dt;
@@ -64,10 +60,58 @@ void MotionTesting::updatePos(float dt)
     this->keyboard->acceleration = 0.0f;
 }
 
-void MotionTesting::render(float dt)
+void TestsModule::render(float dt)
 {
     // execute testing
-    this->map.renderGrid(this->window, &this->VPscreen);
+
+    // render map from texture
+    Texture *map = new Texture();
+    map->load(this->window, "../assets/testMap32.png");
+    // lock texture
+    map->lockTexture();
+    Uint32 format = SDL_GetWindowPixelFormat(this->window->window);
+    SDL_PixelFormat *mappingFormat = SDL_AllocFormat(format);
+
+    // get pixel data and count numb of pixels
+    Uint32 *pixelData = (Uint32 *)map->getPixels();
+    int pixelCount = (map->getPitch() / 4) * map->getHeight();
+
+    // map collors
+    Uint32 colorKey = SDL_MapRGB(mappingFormat, 0, 0, 0);
+
+    // check if wall was found
+    int row = 0, column = 0;
+    int mapArray[100][100];
+
+    for (int i = 0; i < pixelCount; i++)
+    {
+        if (column > map->getPitch() / 4)
+        {
+            // add row and reset column
+            row++;
+            column = 0;
+        }
+        if (pixelData[i] == colorKey)
+            mapArray[row][column] = 1;
+        else
+            mapArray[row][column] = 0;
+        column++;
+    }
+
+    if (keyboard->printData)
+    {
+        for (int i = 0; i < row; i++)
+        {
+            for (int j = 0; j < column; j++)
+            {
+                std::cout << mapArray[i][j];
+            }
+            std::cout << "\n";
+        }
+    }
+
+    // unlock texture
+    map->unlockTexture();
 
     // update angle
     this->updateAngle(dt);
@@ -133,7 +177,7 @@ void MotionTesting::render(float dt)
     }
 }
 
-void MotionTesting::debugging()
+void TestsModule::debugging()
 {
     std::cout << "Line angle: " << this->angle << "\n";
     std::cout << "Keyboard angle: " << this->keyboard->angle << "\n";
@@ -142,4 +186,4 @@ void MotionTesting::debugging()
     this->keyboard->printData = false;
 }
 
-void MotionTesting::cleanup() {}
+void TestsModule::cleanup() {}

@@ -18,7 +18,7 @@ public:
     void setMinimapPort();
     void setWorldPort();
 
-    void setMapPerimeter();
+    void setMap();
     void initPlayers();
     void initEnemies();
 
@@ -39,6 +39,7 @@ private:
     Map map;
     Player player;
 
+    SDL_Rect VPfiller;
     SDL_Rect VPminimap;
     SDL_Rect VPworld;
 

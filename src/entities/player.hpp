@@ -17,8 +17,8 @@ public:
     void init(Map *w);
     void updatePos(Keyboard *kb, float dt);
     void updateCurrentAngle(Keyboard *kb, float dt);
-    void render(Window *w, SDL_Rect *port);
-    void rayCastDDD(Window *window, SDL_Rect *port, Map *map);
+    void translate();
+    void rayCastDDD(Map *map);
     void clearRays();
 
     Ray rays[MAX_RAYS];
@@ -33,6 +33,7 @@ public:
     
     // as triangle:
     Triangle triangle;
+    Triangle transfTriangle;
 
     float angle;
 };

@@ -20,8 +20,20 @@ public:
     void render(Window *w, int x, int y);
     void cleanup();
 
+    // Pixel manipulators
+    bool lockTexture();
+    bool unlockTexture();
+    
+    inline int getWidth() { return this->w; }
+    inline int getHeight() { return this->h; }
+    inline void *getPixels() { return this->pixels; }
+    inline int getPitch() { return this->pitch; }
+
 private:
     SDL_Texture *tex;
+
+    void *pixels;
+    int pitch;
 
     int x;
     int y;
