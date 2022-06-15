@@ -9,12 +9,12 @@
 // https://github.com/Kofybrek/Raycasting/blob/Main/Source/MapCollision.cpp
 // ========================================================================
 
-bool map_collision(vec2 pos, Map *map, SDL_Rect *port, Window *w)
+vec2 map_collision(vec2 pos, Map *map)
 {
     float cell_x = pos.x / CELL_SIZE;
     float cell_y = pos.y / CELL_SIZE;
 
-    SDL_Rect hoverGrid;
+    vec2 coll = vec2(-1.0f, -1.0f);
 
     for (unsigned char a = 0; a < 4; a++)
     {
@@ -51,24 +51,83 @@ bool map_collision(vec2 pos, Map *map, SDL_Rect *port, Window *w)
         }
         }
 
-        if (0 <= x && 0 <= y && port->h > y && port->w > x)
+        if (map->mapCells[y][x].value == '#')
         {
-            if (map->mapCells[y][x].value == '#')
-            {
-                hoverGrid = {((int)pos.x / CELL_SIZE) * CELL_SIZE, ((int)pos.y / CELL_SIZE) * CELL_SIZE, CELL_SIZE, CELL_SIZE};
-                SDL_RenderSetViewport(w->renderer, port);
-                SDL_SetRenderDrawColor(w->renderer, 255, 255, 0, 1);
-                SDL_RenderFillRect(w->renderer, &hoverGrid);
-                std::cout << "Collision detected \n Player pos: x: " << pos.x << " y: " << pos.y << "\n" << "Wall at: x: " << x << " y: " << y << "\n";
-                return 1;
-            }
+            coll = {pos.x = map->mapCells[y][x].rect.x, pos.y = map->mapCells[y][x].rect.y};
+            // std::cout << "Collision detected \n Player pos: x: " << p->pos.x << " y: " << p->pos.y << "\n"
+            //     << "Wall at: x: " << x << " y: " << y << "\n";
         }
     }
-    return 0;
+    return coll;
 }
 
-bool map_collision_2(vec2 pos, Map *map, SDL_Rect *port, Window *w)
+vec2 map_collision_2(vec2 pos, std::vector<vec2> box, Map *map)
 {
-    
-    return 0;
+    vec2 dist = {-1.0f, -1.0f};
+
+    int cell_X = pos.x / CELL_SIZE;
+    int cell_Y = pos.y / CELL_SIZE;
+
+    bool left = map->mapCells[cell_Y][cell_X - 1].value == '#';
+    bool top = map->mapCells[cell_Y - 1][cell_X].value == '#';
+    bool right = map->mapCells[cell_Y][cell_X + 1].value == '#';
+    bool bottom = map->mapCells[cell_Y + 1][cell_X].value == '#';
+
+    // std::cout << "Left: " << ((left == 1) ? "WALL" : "SPACE") << "\n";
+    // std::cout << "Top: " << ((top == 1) ? "WALL" : "SPACE") << "\n";
+    // std::cout << "Right: " << ((right == 1) ? "WALL" : "SPACE") << "\n";
+    // std::cout << "Bottom: " << ((bottom == 1) ? "WALL" : "SPACE") << "\n";
+
+    if (left)
+    {
+        float x = map->mapCells[cell_Y][cell_X - 1].rect.x + CELL_SIZE;
+        float closest = 100.0f;
+        for (int i = 0; i < 4; i++)
+        {
+            float current = box[i].x - x;
+            if (current < closest)
+                closest = current;
+        }
+        dist.x = closest;
+    }
+
+    if (top)
+    {
+        float y = map->mapCells[cell_Y - 1][cell_X].rect.y + CELL_SIZE;
+        float closest = 100.0f;
+        for (int i = 0; i < 4; i++)
+        {
+            float current = box[i].y - y;
+            if (current < closest)
+                closest = current;
+        }
+        dist.y = closest;
+    }
+
+    if (right)
+    {
+        float x = map->mapCells[cell_Y][cell_X + 1].rect.x + CELL_SIZE;
+        float closest = 100.0f;
+        for (int i = 0; i < 4; i++)
+        {
+            float current = x - box[i].x;
+            if (current < closest)
+                closest = current;
+        }
+        dist.x = closest;
+    }
+
+    if (bottom)
+    {
+        float y = map->mapCells[cell_Y + 1][cell_X].rect.y - CELL_SIZE;
+        float closest = 100.0f;
+        for (int i = 0; i < 4; i++)
+        {
+            float current = y - box[i].y;
+            if (current < closest)
+                closest = current;
+        }
+    }
+
+    return dist;
 }

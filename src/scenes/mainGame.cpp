@@ -2,16 +2,28 @@
 
 #include <cmath>
 
+#include "../physics/collision.hpp"
+
 /**
  * draw triangle
- *
- *
  */
 void drawTriangle(Window *w, Triangle t)
 {
     SDL_RenderDrawLineF(w->renderer, t.p2.x, t.p2.y, t.p3.x, t.p3.y); // nose to right leg
     SDL_RenderDrawLineF(w->renderer, t.p3.x, t.p3.y, t.p1.x, t.p1.y); // right to left leg
     SDL_RenderDrawLineF(w->renderer, t.p1.x, t.p1.y, t.p2.x, t.p2.y); // left to nose
+}
+
+/**
+ * draw square
+ */
+void drawShape(Window *w, std::vector<vec2> points)
+{
+    for (int i = 1; i < points.size(); i++)
+    {
+        //std::cout << "x1: " << points[i - 1].x << " - y1: " << points[i - 1].y << " - x2: " << points[i].x << " - y2: " << points[i].y << "\n";
+        SDL_RenderDrawLineF(w->renderer, points[i - 1].x, points[i - 1].y, points[i].x, points[i].y);
+    }
 }
 
 MainGame::MainGame(Window *window, Mouse *mouse, Keyboard *keyboard)
@@ -27,7 +39,7 @@ MainGame::MainGame(Window *window, Mouse *mouse, Keyboard *keyboard)
     this->background = new Texture(this->window, "../assets/images/space_1.png");
 
     // Load wall
-    this->wall = new Texture(this->window, "../assets/Walls/Wall64.png");
+    //this->wall = new Texture(this->window, "../assets/Walls/Wall64.png");
 }
 
 void MainGame::setMinimapPort()
@@ -89,6 +101,18 @@ void MainGame::renderMinimap(float dt)
 
     drawTriangle(this->window, minimapTriangle);
 
+    std::vector<vec2> minimapBoxCollider;
+    for (int i = 0; i < this->player.trBoxCollider.size(); i++)
+    {
+        float modX = this->player.trBoxCollider[i].x * xConvRatio;
+        float modY = this->player.trBoxCollider[i].y * yConvRatio;
+        minimapBoxCollider.push_back(vec2(modX, modY));
+    }
+
+    //draw box collider
+    SDL_SetRenderDrawColor(this->window->renderer, 255, 255, 255, 255);
+    drawShape(this->window, minimapBoxCollider);
+    
     // draw rays
     for (int i = 0; i < MAX_RAYS; i++)
     {
@@ -108,8 +132,15 @@ void MainGame::renderMinimap(float dt)
 
 void MainGame::renderWorld(float dt)
 {
+    
+    /*
+    ====================================
+    Player stuff
+    ====================================
+    */
+
     // player updates and translations
-    this->player.updatePos(this->keyboard, dt);
+    this->player.updatePos(this->keyboard, dt, &this->map);
     this->player.updateCurrentAngle(this->keyboard, dt);
     this->player.translate();
 

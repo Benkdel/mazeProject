@@ -4,7 +4,7 @@
 #include "../entities/player.hpp"
 #include "../worlds/map.hpp"
 
-bool map_collision(vec2 pos, Map *map, SDL_Rect *port, Window *w);
-bool map_collision_2(vec2 pos, Map *map, SDL_Rect *port, Window *w);
+vec2 map_collision(vec2 pos, Map *map);
+vec2 map_collision_2(vec2 pos, std::vector<vec2> box, Map *map);
 
 #endif

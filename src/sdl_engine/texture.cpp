@@ -96,13 +96,12 @@ void Texture::alphaMod(Uint8 alpha)
 void Texture::render(Window *w, int x, int y, int width, int height)
 {
     // set rendering space and render to screen
-    SDL_Rect renderQuad;
-    renderQuad.x = x;
-    renderQuad.y = y;
-    renderQuad.w = (width == 0) ? this->w : width;
-    renderQuad.h = (height == 0) ? this->h : height;
+    this->dimensions.x = x;
+    this->dimensions.y = y;
+    this->dimensions.w = (width == 0) ? this->w : width;
+    this->dimensions.h = (height == 0) ? this->h : height;
 
-    SDL_RenderCopy(w->renderer, this->tex, NULL, &renderQuad);
+    SDL_RenderCopy(w->renderer, this->tex, NULL, &this->dimensions);
 }
 
 bool Texture::lockTexture()

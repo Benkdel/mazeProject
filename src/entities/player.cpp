@@ -7,7 +7,7 @@
 #include <iostream>
 #include <cmath>
 
-
+#include "../physics/collision.hpp"
 
 Player::Player() {}
 
@@ -21,6 +21,12 @@ void Player::init(Map *w)
 
     // left leg, nose, and right leg (points pointing to the right at 0 degrees) // y is inverted
     this->triangle = Triangle(vec2(0.0f, -0.5f), vec2(0.5f, 0.0f), vec2(0.0f, 0.5f));
+
+    // set up box collider
+    this->boxCollider.push_back(vec2(-0.25f, -0.25f));
+    this->boxCollider.push_back(vec2( 0.25f, -0.25f));
+    this->boxCollider.push_back(vec2( 0.25f,  0.25f));
+    this->boxCollider.push_back(vec2(-0.25f,  0.25f));
 }
 
 void Player::updateCurrentAngle(Keyboard *kb, float dt)
@@ -39,24 +45,42 @@ void Player::updateCurrentAngle(Keyboard *kb, float dt)
         this->angle = this->angle - 360.0f + 0.00000001f;
 }
 
-void Player::updatePos(Keyboard *kb, float dt)
+void Player::updatePos(Keyboard *kb, float dt, Map *map)
 {
-    this->pos.x += cosf(deg2rad(this->angle)) * kb->acceleration * 5.0f * dt;
-    this->pos.y += -sinf(deg2rad(this->angle)) * kb->acceleration * 5.0f * dt;
+    float distanceX;
+    float distanceY;
+
+    distanceX = cosf(deg2rad(this->angle)) * kb->acceleration * 5.0f * dt;
+    distanceY = -sinf(deg2rad(this->angle)) * kb->acceleration * 5.0f * dt;
+
+    if (this->trBoxCollider.size() > 0)
+    {
+        vec2 collDist = map_collision_2(this->pos, this->trBoxCollider, map);
+        if (collDist.x > -1)
+        {
+            float absDistX = sqrt(distanceX * distanceX);
+            float collXabs = sqrt(collDist.x * collDist.x);
+            distanceX = (absDistX * 25.f > collXabs) ? 0 : distanceX;
+        }
+        
+        if (collDist.y > -1)
+        {
+            float absDistY = sqrt(distanceY * distanceY);
+            float collYabs = sqrt(collDist.y * collDist.y);
+            distanceY = (absDistY * 25.f > collYabs) ? 0 : distanceY;
+        }
+    }
+
+    this->pos.x += distanceX;
+    this->pos.y += distanceY;
 
     kb->acceleration = 0.0f;
-
-    // update box collider
-    this->box_collider.x = this->pos.x - this->radius * 7 / 10;
-    this->box_collider.y = this->pos.y - this->radius * 7 / 10;
-    this->box_collider.w = this->radius * 14 / 10;
-    this->box_collider.h = this->radius * 14 / 10;
 }
 
 void Player::translate()
 {
     // scale
-    float size = 40.0f;
+    float size = 30.0f;
     this->transfTriangle.p1 = scale2Dvec(this->triangle.p1, size);
     this->transfTriangle.p2 = scale2Dvec(this->triangle.p2, size);
     this->transfTriangle.p3 = scale2Dvec(this->triangle.p3, size);
@@ -72,6 +96,18 @@ void Player::translate()
     this->transfTriangle.p2 = this->transfTriangle.p2 + this->pos;
     this->transfTriangle.p3 = this->transfTriangle.p3 + this->pos;
 
+    // transformations for box collider
+    this->trBoxCollider.clear();
+    // scaling
+    for (int i = 0; i < 4; i++)
+        this->trBoxCollider.push_back(scale2Dvec(this->boxCollider[i], size));
+    // rotation
+    for (int i = 0; i < 4; i++)
+        this->trBoxCollider[i] = rotate2Dvec(this->trBoxCollider[i], -this->angle);
+    // translation
+    for (int i = 0; i < 4; i++)
+        this->trBoxCollider[i] = this->trBoxCollider[i] + this->pos;
+
     // reset rays
     for (int i = 0; i < MAX_RAYS; i++)
         this->rays[i].rayDir = vec2(0.0f, 0.0f);
@@ -79,9 +115,9 @@ void Player::translate()
     // set FoV vectors or Rays
     this->lookAt = this->transfTriangle.p2;
 
-    float fAngle = this->angle - (FOV / 2); // substract 30 degrees from current view angle
+    float fAngle = this->angle - (FOV / 2);      // substract 30 degrees from current view angle
     float colAngleDelta = FOV / (float)MAX_RAYS; // calculate delta angle for each column
-    
+
     if (fAngle < 0.0f)
         fAngle = 360.0f + fAngle;
     if (fAngle > 360.0f)

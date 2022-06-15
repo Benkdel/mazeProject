@@ -59,7 +59,7 @@ void Ray::castDDD(vec2 pos, vec2 lookAt, Map *map)
 
         if (cell_Y >= 0 && cell_X >= 0 && cell_Y <= map->h, cell_X <= map->w)
         {
-            if (map->mapCells[cell_Y + 1][cell_X + 1].value == '#')
+            if (map->mapCells[cell_Y][cell_X].value == '#')
             {
                 tileFound = true;
             }

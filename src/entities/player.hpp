@@ -10,12 +10,13 @@
 
 #include <vector>
 
+
 class Player {
 public:
 
     Player();
     void init(Map *w);
-    void updatePos(Keyboard *kb, float dt);
+    void updatePos(Keyboard *kb, float dt, Map *map);
     void updateCurrentAngle(Keyboard *kb, float dt);
     void translate();
     void rayCastDDD(Map *map);
@@ -26,7 +27,9 @@ public:
     vec2 pos;
     vec2 lookAt;
     
-    SDL_Rect box_collider;
+    // box is array of 4 vec2
+    std::vector<vec2> boxCollider;
+    std::vector<vec2> trBoxCollider;
 
     // if we want to draw player as circle
     float radius;

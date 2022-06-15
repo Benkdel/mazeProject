@@ -34,6 +34,7 @@ public:
 
 private:
     SDL_Texture *tex;
+    SDL_Rect dimensions;
 
     void *pixels;
     int pitch;
