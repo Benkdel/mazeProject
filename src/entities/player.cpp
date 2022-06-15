@@ -79,15 +79,18 @@ void Player::translate()
     // set FoV vectors or Rays
     this->lookAt = this->transfTriangle.p2;
 
-    float fAngle = this->angle - (FOV / 2);
+    float fAngle = this->angle - (FOV / 2); // substract 30 degrees from current view angle
+    float colAngleDelta = FOV / (float)MAX_RAYS; // calculate delta angle for each column
+    
     if (fAngle < 0.0f)
         fAngle = 360.0f + fAngle;
     if (fAngle > 360.0f)
         fAngle = fAngle - 360.0f + 0.0001f;
 
+    // store subsequent angles to the rigth starting from p angle - 30 deg
     for (int i = 0; i < MAX_RAYS; i++)
     {
-        this->rays[i].angle = fAngle + (float)i ; // store angle to use later
+        this->rays[i].angle = fAngle + colAngleDelta * i; // store angle to use later
         this->rays[i].rayDir = getVecFromAngle(1.0f, this->rays[i].angle);
     }
 }

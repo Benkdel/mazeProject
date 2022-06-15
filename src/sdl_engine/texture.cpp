@@ -11,6 +11,11 @@ Texture::Texture()
     this->status = false;
 }
 
+Texture::Texture(Window *w, const char *filePath)
+{
+    this->load(w, filePath);
+}
+
 Texture::~Texture()
 {
     this->cleanup();
@@ -88,14 +93,14 @@ void Texture::alphaMod(Uint8 alpha)
     SDL_SetTextureAlphaMod(this->tex, alpha);
 }
 
-void Texture::render(Window *w, int x, int y)
+void Texture::render(Window *w, int x, int y, int width, int height)
 {
     // set rendering space and render to screen
     SDL_Rect renderQuad;
     renderQuad.x = x;
     renderQuad.y = y;
-    renderQuad.w = this->w;
-    renderQuad.h = this->h;
+    renderQuad.w = (width == 0) ? this->w : width;
+    renderQuad.h = (height == 0) ? this->h : height;
 
     SDL_RenderCopy(w->renderer, this->tex, NULL, &renderQuad);
 }

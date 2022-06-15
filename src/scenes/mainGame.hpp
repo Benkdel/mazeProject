@@ -9,6 +9,7 @@
 #include "../entities/player.hpp"
 #include "../worlds/map.hpp"
 
+#include <map>
 
 class MainGame {
 public:
@@ -34,8 +35,11 @@ private:
     Window *window;
     Mouse *mouse;
     Keyboard *keyboard;
-    Texture *texture;
+    
+    Texture *background;
+    Texture *wall;
 
+    
     Map map;
     Player player;
 

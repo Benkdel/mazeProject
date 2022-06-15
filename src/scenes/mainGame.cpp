@@ -23,9 +23,11 @@ MainGame::MainGame(Window *window, Mouse *mouse, Keyboard *keyboard)
     this->setMinimapPort();
     this->setWorldPort();
 
-    // Init texture obj and load textures
-    this->texture = new Texture();
-    this->texture->load(this->window, "../assets/images/space_1.png");
+    // Load background texture
+    this->background = new Texture(this->window, "../assets/images/space_1.png");
+
+    // Load wall
+    this->wall = new Texture(this->window, "../assets/Walls/Wall64.png");
 }
 
 void MainGame::setMinimapPort()
@@ -118,54 +120,46 @@ void MainGame::renderWorld(float dt)
     SDL_RenderSetViewport(this->window->renderer, &this->VPworld);
 
     // render background
-    this->texture->render(this->window, 0, 0);
+    this->background->render(this->window, 0, 0);
 
     // on top of that load floor textures
-    SDL_SetRenderDrawColor(this->window->renderer, 138, 127, 74, 255);
+    SDL_SetRenderDrawColor(this->window->renderer, 121, 223, 114, 255);
     SDL_Rect floor = {0, this->VPworld.h / 2, this->VPworld.w, this->VPworld.h / 2};
     SDL_RenderFillRect(this->window->renderer, &floor);
 
-    // render walls based on rays length
-    int nGallGroups = this->VPworld.w / MAX_RAYS;
-    int wallWidth = 3;
-    int wallsPerRay = nGallGroups / wallWidth;
-    float rayOffset = 0.0f;
+    /*
+    ====================================
+    render walls based on rays length
+    ====================================
+    */
+
+    float wallWidth = (float)this->map.w / (float)MAX_RAYS;
 
     SDL_FRect wall;
-    vec2 fWall = vec2((float)(CELL_SIZE * 3), (float)(this->VPworld.h - CELL_SIZE));
-
     for (int i = 0; i < MAX_RAYS; i++)
     {
-        // set current wall
-
         // fix fish eye
         float aDist = this->player.rays[i].angle - this->player.angle;
         aDist = (aDist < 0.0f) ? 360.0f + aDist : aDist;
         aDist = (aDist > 360.0f) ? aDist - 360.0f + 0.0001f : aDist;
 
-        float modDistance = this->player.rays[i].distance * cos(deg2rad(aDist));
+        float modDistance = this->player.rays[i].distance * cosf(deg2rad(aDist));
 
         float wallHeight = (float)(this->VPworld.h * CELL_SIZE) / modDistance;
         if (wallHeight > this->VPworld.h - 2 * CELL_SIZE)
             wallHeight = this->VPworld.h - 2 * CELL_SIZE;
 
         if (this->player.rays[i].results.HitDir == 0)
-            SDL_SetRenderDrawColor(this->window->renderer, 0, 128, 255, 255);
+            SDL_SetRenderDrawColor(this->window->renderer, 128, 128, 128, 255);
         else
-            SDL_SetRenderDrawColor(this->window->renderer, 0, 51, 102, 255);            
+            SDL_SetRenderDrawColor(this->window->renderer, 96, 96, 96, 255);
 
-        // draw multiple walls per ray
-        for (int j = 0; j < wallsPerRay; j++)
-        {
-            wall.x = i * wallWidth + (j * wallWidth) + rayOffset;
-            wall.y = this->VPworld.h / 2 - wallHeight / 2;
-            wall.w = wallWidth;
-            wall.h = wallHeight;
-
-            // render current wall
-            SDL_RenderFillRectF(this->window->renderer, &wall);
-        }
-        rayOffset += (wallsPerRay - 1) * wallWidth;
+        wall.x = i * wallWidth;
+        wall.y = this->VPworld.h / 2 - wallHeight / 2;
+        wall.w = wallWidth;
+        wall.h = wallHeight;
+        SDL_RenderFillRectF(this->window->renderer, &wall);
+        //this->wall->render(this->window, wall.x, wall.y, wall.w, wall.h);
     }
 
     if (this->keyboard->printData)
