@@ -21,12 +21,6 @@ void Player::init(Map *w)
 
     // left leg, nose, and right leg (points pointing to the right at 0 degrees) // y is inverted
     this->triangle = Triangle(vec2(0.0f, -0.5f), vec2(0.5f, 0.0f), vec2(0.0f, 0.5f));
-
-    // set up box collider
-    this->boxCollider.push_back(vec2(-0.25f, -0.25f));
-    this->boxCollider.push_back(vec2( 0.25f, -0.25f));
-    this->boxCollider.push_back(vec2( 0.25f,  0.25f));
-    this->boxCollider.push_back(vec2(-0.25f,  0.25f));
 }
 
 void Player::updateCurrentAngle(Keyboard *kb, float dt)
@@ -47,32 +41,30 @@ void Player::updateCurrentAngle(Keyboard *kb, float dt)
 
 void Player::updatePos(Keyboard *kb, float dt, Map *map)
 {
-    float distanceX;
-    float distanceY;
+    vec2 velocity;
+    vec2 newPlayerPos;
 
-    distanceX = cosf(deg2rad(this->angle)) * kb->acceleration * 5.0f * dt;
-    distanceY = -sinf(deg2rad(this->angle)) * kb->acceleration * 5.0f * dt;
+    velocity.x = cosf(deg2rad(this->angle)) * kb->velocity * dt;
+    velocity.y = -sinf(deg2rad(this->angle)) * kb->velocity * dt;
 
-    if (this->trBoxCollider.size() > 0)
+    newPlayerPos = this->pos + velocity;
+
+    vec2 collDist = map_collision_2(this->pos, newPlayerPos, velocity, map);
+
+    if (collDist.x != -1)
     {
-        vec2 collDist = map_collision_2(this->pos, this->trBoxCollider, map);
-        if (collDist.x > -1)
-        {
-            float absDistX = sqrt(distanceX * distanceX);
-            float collXabs = sqrt(collDist.x * collDist.x);
-            distanceX = (absDistX * 25.f > collXabs) ? 0 : distanceX;
-        }
-        
-        if (collDist.y > -1)
-        {
-            float absDistY = sqrt(distanceY * distanceY);
-            float collYabs = sqrt(collDist.y * collDist.y);
-            distanceY = (absDistY * 25.f > collYabs) ? 0 : distanceY;
-        }
+        this->pos.x = collDist.x;
+        velocity.x = 0.0f;
     }
 
-    this->pos.x += distanceX;
-    this->pos.y += distanceY;
+    if (collDist.y != -1)
+    {
+        this->pos.y = collDist.y;
+        velocity.y = 0.0f;
+    }
+
+    this->pos.x += velocity.x;
+    this->pos.y += velocity.y;
 
     kb->acceleration = 0.0f;
 }
@@ -95,18 +87,6 @@ void Player::translate()
     this->transfTriangle.p1 = this->transfTriangle.p1 + this->pos;
     this->transfTriangle.p2 = this->transfTriangle.p2 + this->pos;
     this->transfTriangle.p3 = this->transfTriangle.p3 + this->pos;
-
-    // transformations for box collider
-    this->trBoxCollider.clear();
-    // scaling
-    for (int i = 0; i < 4; i++)
-        this->trBoxCollider.push_back(scale2Dvec(this->boxCollider[i], size));
-    // rotation
-    for (int i = 0; i < 4; i++)
-        this->trBoxCollider[i] = rotate2Dvec(this->trBoxCollider[i], -this->angle);
-    // translation
-    for (int i = 0; i < 4; i++)
-        this->trBoxCollider[i] = this->trBoxCollider[i] + this->pos;
 
     // reset rays
     for (int i = 0; i < MAX_RAYS; i++)

@@ -100,18 +100,6 @@ void MainGame::renderMinimap(float dt)
     minimapTriangle.p3.y = this->player.transfTriangle.p3.y * yConvRatio;
 
     drawTriangle(this->window, minimapTriangle);
-
-    std::vector<vec2> minimapBoxCollider;
-    for (int i = 0; i < this->player.trBoxCollider.size(); i++)
-    {
-        float modX = this->player.trBoxCollider[i].x * xConvRatio;
-        float modY = this->player.trBoxCollider[i].y * yConvRatio;
-        minimapBoxCollider.push_back(vec2(modX, modY));
-    }
-
-    //draw box collider
-    SDL_SetRenderDrawColor(this->window->renderer, 255, 255, 255, 255);
-    drawShape(this->window, minimapBoxCollider);
     
     // draw rays
     for (int i = 0; i < MAX_RAYS; i++)

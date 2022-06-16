@@ -3,9 +3,10 @@
 
 #include <SDL.h>
 #include <vector>
-#include "../sdl_engine/window.hpp"
-#include "../macros.hpp"
 
+#include "../macros.hpp"
+#include "../sdl_engine/window.hpp"
+#include "../math/myMathLib.hpp"
 
 class Cell {
 public:
@@ -30,6 +31,7 @@ public:
     SDL_Rect recWalls;
     Cell mapCells[GRID_HEIGHT][GRID_WIDTH];
 
+    Cell getCell(vec2 vec);
 };
 
 #endif

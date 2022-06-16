@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 
+
 Map::Map() {}
 
 
@@ -109,4 +110,12 @@ void Map::setWalls()
         c = 0;
         lR = r;
     }
+}
+
+Cell Map::getCell(vec2 vec)
+{
+    int cell_X = vec.x / CELL_SIZE;
+    int cell_Y = vec.y / CELL_SIZE;
+
+    return this->mapCells[cell_Y][cell_X];
 }

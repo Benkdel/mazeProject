@@ -27,10 +27,6 @@ public:
     vec2 pos;
     vec2 lookAt;
     
-    // box is array of 4 vec2
-    std::vector<vec2> boxCollider;
-    std::vector<vec2> trBoxCollider;
-
     // if we want to draw player as circle
     float radius;
     

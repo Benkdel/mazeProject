@@ -97,7 +97,7 @@ int main(int argc, char **argv)
         while (!window.windowShouldClose)
         {
             currentTime = SDL_GetTicks();
-            deltaTime = (float)(currentTime - lastTime) / 1000.0f;
+            deltaTime = (float)(currentTime - lastTime) / 1.0f;
             lastTime = currentTime;
 
             // handle events on queue
@@ -185,11 +185,11 @@ void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *eve
     const uint8_t *currentKeyStates = SDL_GetKeyboardState(NULL);
     if (currentKeyStates[SDL_SCANCODE_W])
     {
-        keyBoard->acceleration = 50.0f;
+        keyBoard->velocity = 200.0f;
     }
     if (currentKeyStates[SDL_SCANCODE_S])
     {
-        keyBoard->acceleration = -50.0f;
+        keyBoard->velocity = -200.0f;
     }
     // implement strafing TODO
 

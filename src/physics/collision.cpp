@@ -61,72 +61,47 @@ vec2 map_collision(vec2 pos, Map *map)
     return coll;
 }
 
-vec2 map_collision_2(vec2 pos, std::vector<vec2> box, Map *map)
+
+vec2 map_collision_2(vec2 pos, vec2 newPos, vec2 velocity, Map *map)
 {
     vec2 dist = {-1.0f, -1.0f};
 
-    int cell_X = pos.x / CELL_SIZE;
-    int cell_Y = pos.y / CELL_SIZE;
+    /* 
+    ===================================
+        Check for Horizontal Collision
+    ===================================
+    */
 
-    bool left = map->mapCells[cell_Y][cell_X - 1].value == '#';
-    bool top = map->mapCells[cell_Y - 1][cell_X].value == '#';
-    bool right = map->mapCells[cell_Y][cell_X + 1].value == '#';
-    bool bottom = map->mapCells[cell_Y + 1][cell_X].value == '#';
-
-    // std::cout << "Left: " << ((left == 1) ? "WALL" : "SPACE") << "\n";
-    // std::cout << "Top: " << ((top == 1) ? "WALL" : "SPACE") << "\n";
-    // std::cout << "Right: " << ((right == 1) ? "WALL" : "SPACE") << "\n";
-    // std::cout << "Bottom: " << ((bottom == 1) ? "WALL" : "SPACE") << "\n";
-
-    if (left)
+    // going to the left
+    if (velocity.x <= 0)
     {
-        float x = map->mapCells[cell_Y][cell_X - 1].rect.x + CELL_SIZE;
-        float closest = 100.0f;
-        for (int i = 0; i < 4; i++)
-        {
-            float current = box[i].x - x;
-            if (current < closest)
-                closest = current;
-        }
-        dist.x = closest;
+        if (map->getCell(vec2(newPos.x, pos.y)).value == '#' || map->getCell(vec2(newPos.x, pos.y + 0.99f)).value == '#')
+            dist.x = (int)pos.x + 1;
     }
-
-    if (top)
+    // going to the right
+    else
     {
-        float y = map->mapCells[cell_Y - 1][cell_X].rect.y + CELL_SIZE;
-        float closest = 100.0f;
-        for (int i = 0; i < 4; i++)
-        {
-            float current = box[i].y - y;
-            if (current < closest)
-                closest = current;
-        }
-        dist.y = closest;
+        if (map->getCell(vec2(newPos.x + 1.0f, pos.y)).value == '#' || map->getCell(vec2(newPos.x + 1.0f, pos.y + 0.99f)).value == '#')
+            dist.x = (int)pos.x;
     }
+        
+    /* 
+    ===================================
+        Check for Vertical Collision
+    ===================================
+    */
 
-    if (right)
+    // going Up
+    if (velocity.y <= 0)
     {
-        float x = map->mapCells[cell_Y][cell_X + 1].rect.x + CELL_SIZE;
-        float closest = 100.0f;
-        for (int i = 0; i < 4; i++)
-        {
-            float current = x - box[i].x;
-            if (current < closest)
-                closest = current;
-        }
-        dist.x = closest;
+        if (map->getCell(vec2(newPos.x, newPos.y)).value == '#' || map->getCell(vec2(newPos.x + 1.0f, newPos.y)).value == '#')
+            dist.y = (int)pos.y + 1;
     }
-
-    if (bottom)
+    // going down
+    else
     {
-        float y = map->mapCells[cell_Y + 1][cell_X].rect.y - CELL_SIZE;
-        float closest = 100.0f;
-        for (int i = 0; i < 4; i++)
-        {
-            float current = y - box[i].y;
-            if (current < closest)
-                closest = current;
-        }
+        if (map->getCell(vec2(newPos.x, newPos.y + 1.0f)).value == '#' || map->getCell(vec2(newPos.x + 1.0f, newPos.y + 1.0f)).value == '#')
+            dist.y = (int)pos.y;
     }
 
     return dist;
