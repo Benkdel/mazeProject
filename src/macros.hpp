@@ -13,7 +13,9 @@
 #define MAX_RAYS 320 // or width of the projection plane
 #define MAX_RAY_LENGTH 850.0f
 
-#define CONST_PI 3.14159265358979323846
+#define MOUSE_SENSITIVITY_X 320.0f
+#define MOUSE_SENSITIVITY_Y 320.0f
 
+#define CONST_PI 3.14159265358979323846
 
 #endif

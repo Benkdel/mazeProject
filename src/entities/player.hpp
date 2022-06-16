@@ -7,6 +7,7 @@
 #include "../math/myMathLib.hpp"
 #include "../physics/ray.hpp"
 #include "../io/keyboard.hpp"
+#include "../io/mouse.hpp"
 
 #include <vector>
 
@@ -17,7 +18,7 @@ public:
     Player();
     void init(Map *w);
     void updatePos(Keyboard *kb, float dt, Map *map);
-    void updateCurrentAngle(Keyboard *kb, float dt);
+    void updateCurrentAngle(Mouse *m, float dt);
     void translate();
     void rayCastDDD(Map *map);
     void clearRays();

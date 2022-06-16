@@ -34,6 +34,9 @@ public:
     Circle circle;
     float radius;
 
+    int lastX;
+    int lastY;
+
 private:
     Window *window;
     Mouse *mouse;

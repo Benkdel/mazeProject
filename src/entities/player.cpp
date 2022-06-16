@@ -23,15 +23,11 @@ void Player::init(Map *w)
     this->triangle = Triangle(vec2(0.0f, -0.5f), vec2(0.5f, 0.0f), vec2(0.0f, 0.5f));
 }
 
-void Player::updateCurrentAngle(Keyboard *kb, float dt)
+void Player::updateCurrentAngle(Mouse *m, float dt)
 {
-    // update angle correctly
-    float rotation = 50.0f * kb->angle * dt;
-
-    // reset keyboard angle
-    kb->angle = 0.0f;
-
-    this->angle += rotation;
+    float deltaX = m->position.x - m->lastPos.x;
+    m->lastPos.x = m->position.x;
+    this->angle += deltaX * 0.5f;
 
     if (this->angle < 0.0f)
         this->angle = 360.0f + this->angle;
@@ -49,7 +45,7 @@ void Player::updatePos(Keyboard *kb, float dt, Map *map)
 
     newPlayerPos = this->pos + velocity;
 
-    vec2 collDist = map_collision_2(this->pos, newPlayerPos, velocity, map);
+    vec2 collDist = map_collision(this->pos, newPlayerPos, velocity, map);
 
     if (collDist.x != -1)
     {
@@ -66,7 +62,7 @@ void Player::updatePos(Keyboard *kb, float dt, Map *map)
     this->pos.x += velocity.x;
     this->pos.y += velocity.y;
 
-    kb->acceleration = 0.0f;
+    kb->velocity = 0.0f;
 }
 
 void Player::translate()

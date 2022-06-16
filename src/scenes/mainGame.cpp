@@ -2,7 +2,6 @@
 
 #include <cmath>
 
-#include "../physics/collision.hpp"
 
 /**
  * draw triangle
@@ -35,8 +34,10 @@ MainGame::MainGame(Window *window, Mouse *mouse, Keyboard *keyboard)
     this->setMinimapPort();
     this->setWorldPort();
 
+    this->mouse->firstMouse = true;
+
     // Load background texture
-    this->background = new Texture(this->window, "../assets/images/space_1.png");
+    //this->background = new Texture(this->window, "../assets/images/space_1.png");
 
     // Load wall
     //this->wall = new Texture(this->window, "../assets/Walls/Wall64.png");
@@ -129,7 +130,7 @@ void MainGame::renderWorld(float dt)
 
     // player updates and translations
     this->player.updatePos(this->keyboard, dt, &this->map);
-    this->player.updateCurrentAngle(this->keyboard, dt);
+    this->player.updateCurrentAngle(this->mouse, dt);
     this->player.translate();
 
     // raycasting
@@ -139,7 +140,7 @@ void MainGame::renderWorld(float dt)
     SDL_RenderSetViewport(this->window->renderer, &this->VPworld);
 
     // render background
-    this->background->render(this->window, 0, 0);
+    //this->background->render(this->window, 0, 0);
 
     // on top of that load floor textures
     SDL_SetRenderDrawColor(this->window->renderer, 121, 223, 114, 255);
@@ -178,33 +179,19 @@ void MainGame::renderWorld(float dt)
         wall.w = wallWidth;
         wall.h = wallHeight;
         SDL_RenderFillRectF(this->window->renderer, &wall);
-        //this->wall->render(this->window, wall.x, wall.y, wall.w, wall.h);
     }
 
     if (this->keyboard->printData)
+    {
         this->debugging();
+        this->mouse->printData = true;
+    }
 }
 
 void MainGame::debugging()
 {
     std::cout << "===============================================================================================\n";
-    std::cout << "Player pos => x: " << this->player.pos.x << " y: " << this->player.pos.y << "\n";
-    std::cout << "Top poing => x: " << this->player.triangle.p2.x << " y: " << this->player.triangle.p2.y << "\n";
-    std::cout << "Player angle: " << this->player.angle << "\n";
-    std::cout << "Player Acceleration: " << this->keyboard->acceleration << "\n";
-
-    std::cout << "================< FoV Vectors - mid quartil >========================\n";
-    std::cout << " --  X  -- || --  Y  --\n";
-    for (int i = (MAX_RAYS / 4) * 2; i < (MAX_RAYS / 4) * 3; i++)
-    {
-        std::cout << " " << this->player.rays[i].rayDir.x << "     " << this->player.rays[i].rayDir.y << "\n";
-    }
-
-    std::cout << "================< distances mid quartil >========================\n";
-    for (int i = (MAX_RAYS / 4) * 2; i < (MAX_RAYS / 4) * 3; i++)
-    {
-        std::cout << this->player.rays[i].distance << "\n";
-    }
+    std::cout << "Mouse position x: " << this->mouse->position.x << " y: " << this->mouse->position.y << "\n";
 
     this->keyboard->printData = false;
 }

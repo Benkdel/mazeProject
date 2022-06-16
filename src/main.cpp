@@ -20,6 +20,8 @@ enum Application
     Tests
 };
 
+bool setRelMouseMod = true;
+
 /**
  * main - entry point
  * Return: 0 for success
@@ -43,7 +45,7 @@ int main(int argc, char **argv)
     float deltaTime = 0.0f;
 
     /* IO */
-    Mouse mouse;
+    Mouse mouse((double)SCREEN_WIDTH, (double)SCREEN_HEIGHT);
     Keyboard keyboard;
 
     if (!window.status)
@@ -56,8 +58,10 @@ int main(int argc, char **argv)
     /* ================================== */
     /* ===== RUN CHOOSEN APPLICATION ==== */
     /* ================================== */
-    
+
     SDL_SetRenderDrawBlendMode(window.renderer, SDL_BLENDMODE_BLEND);
+
+    
 
     if (app_choosed == Application::Game)
     {
@@ -66,6 +70,8 @@ int main(int argc, char **argv)
 
         while (!window.windowShouldClose)
         {
+            SDL_SetRelativeMouseMode((SDL_bool)setRelMouseMod);
+
             currentTime = SDL_GetTicks();
             deltaTime = (float)(currentTime - lastTime) / 1000.0f;
             lastTime = currentTime;
@@ -85,6 +91,8 @@ int main(int argc, char **argv)
 
             /* Update the surface */
             SDL_RenderPresent(window.renderer);
+
+
         }
 
         mainGame.cleanup();
@@ -96,8 +104,10 @@ int main(int argc, char **argv)
 
         while (!window.windowShouldClose)
         {
+            SDL_SetRelativeMouseMode((SDL_bool)setRelMouseMod);
+
             currentTime = SDL_GetTicks();
-            deltaTime = (float)(currentTime - lastTime) / 1.0f;
+            deltaTime = (float)(currentTime - lastTime) / 1000.0f;
             lastTime = currentTime;
 
             // handle events on queue
@@ -107,8 +117,9 @@ int main(int argc, char **argv)
             SDL_SetRenderDrawColor(window.renderer, 0, 1, 2, 1);
             SDL_RenderClear(window.renderer);
 
-            motionTesting.render(deltaTime);
+            motionTesting.updateAngle(deltaTime);
             motionTesting.updatePos(deltaTime);
+            motionTesting.render(deltaTime);
 
             // reset velocity
             keyboard.velocity = 0.0f;
@@ -138,9 +149,15 @@ void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *eve
             window->windowShouldClose = true;
         }
 
-        if (event->type == SDL_MOUSEMOTION || event->type == SDL_MOUSEBUTTONDOWN || event->type == SDL_MOUSEBUTTONUP)
+        if (event->type == SDL_MOUSEMOTION)
         {
             SDL_GetMouseState(&x, &y);
+            if (x <= 5 || x >= window->getWidth() - 5)
+            {
+                SDL_WarpMouseInWindow(window->window, mouse->centerX, mouse->centerY);
+                x += (x < mouse->centerX) ? mouse->centerX : -mouse->centerX;
+                mouse->lastPos.x = mouse->centerX;
+            }
             mouse->setPosition(x, y);
         }
 
@@ -151,6 +168,9 @@ void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *eve
             {
             case SDLK_ESCAPE:
                 window->windowShouldClose = true;
+                break;
+            case SDLK_F10:
+                setRelMouseMod = (setRelMouseMod) ? false : true;
                 break;
             case SDLK_p:
                 keyBoard->printData = true;
@@ -178,9 +198,6 @@ void pollEvents(Window *window, Mouse *mouse, Keyboard *keyBoard, SDL_Event *eve
             }
         }
     }
-
-    // reset acceleration
-    keyBoard->acceleration = 0;
 
     const uint8_t *currentKeyStates = SDL_GetKeyboardState(NULL);
     if (currentKeyStates[SDL_SCANCODE_W])

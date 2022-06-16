@@ -25,6 +25,11 @@ TestsModule::TestsModule(Window *window, Mouse *mouse, Keyboard *keyboard)
     this->angle = 0.0f;
 
     this->radius = 2.0f * CONST_PI;
+
+    this->mouse->firstMouse = true;
+
+    this->lastX = 1280 / 2;
+    this->lastY = 960 / 2;
 }
 
 void TestsModule::setPort()
@@ -38,12 +43,21 @@ void TestsModule::setPort()
 void TestsModule::updateAngle(float dt)
 {
     // update angle correctly
-    float rotation = 50.0f * this->keyboard->angle * dt;
+    int x, y;
 
-    // reset keyboard angle
-    this->keyboard->angle = 0.0f;
+    SDL_GetMouseState(&x, &y);
 
-    this->angle += rotation;
+    float deltaX = x - this->lastX;
+    
+    if (this->lastX != x)
+    {
+        std::cout << "DeltaX: " << x - this->lastX << "\n";
+        this->lastX = x;
+    }
+
+    // for now I just want rotation HORIZONTAL
+    this->angle += deltaX;
+
 
     if (this->angle < 0.0f)
         this->angle = 360.0f + this->angle;
@@ -54,68 +68,15 @@ void TestsModule::updateAngle(float dt)
 void TestsModule::updatePos(float dt)
 {
     // apply motion
-    this->centerPoint.x += cosf(deg2rad(this->angle)) * keyboard->acceleration * 5.0f * dt;
-    this->centerPoint.y += -sinf(deg2rad(this->angle)) * keyboard->acceleration * 5.0f * dt;
+    this->centerPoint.x += cosf(deg2rad(this->angle)) * keyboard->velocity * dt;
+    this->centerPoint.y += -sinf(deg2rad(this->angle)) * keyboard->velocity * dt;
 
-    this->keyboard->acceleration = 0.0f;
+    this->keyboard->velocity = 0.0f;
 }
 
 void TestsModule::render(float dt)
 {
     // execute testing
-
-    // render map from texture
-    Texture *map = new Texture();
-    map->load(this->window, "../assets/testMap32.png");
-    // lock texture
-    map->lockTexture();
-    Uint32 format = SDL_GetWindowPixelFormat(this->window->window);
-    SDL_PixelFormat *mappingFormat = SDL_AllocFormat(format);
-
-    // get pixel data and count numb of pixels
-    Uint32 *pixelData = (Uint32 *)map->getPixels();
-    int pixelCount = (map->getPitch() / 4) * map->getHeight();
-
-    // map collors
-    Uint32 colorKey = SDL_MapRGB(mappingFormat, 0, 0, 0);
-
-    // check if wall was found
-    int row = 0, column = 0;
-    int mapArray[100][100];
-
-    for (int i = 0; i < pixelCount; i++)
-    {
-        if (column > map->getPitch() / 4)
-        {
-            // add row and reset column
-            row++;
-            column = 0;
-        }
-        if (pixelData[i] == colorKey)
-            mapArray[row][column] = 1;
-        else
-            mapArray[row][column] = 0;
-        column++;
-    }
-
-    if (keyboard->printData)
-    {
-        for (int i = 0; i < row; i++)
-        {
-            for (int j = 0; j < column; j++)
-            {
-                std::cout << mapArray[i][j];
-            }
-            std::cout << "\n";
-        }
-    }
-
-    // unlock texture
-    map->unlockTexture();
-
-    // update angle
-    this->updateAngle(dt);
-
     line tl1;
     vec2 lLeg;
     vec2 rLeg;
@@ -145,13 +106,6 @@ void TestsModule::render(float dt)
     lLeg = lLeg + this->centerPoint;
     rLeg = rLeg + this->centerPoint;
 
-    // replace with function of math lib
-    float radians;
-    float posX = tl1.p2.x - this->scr_W / 2;
-    float posY = tl1.p2.y - this->scr_H / 2;
-    radians = atan(posY / posX);
-    this->angleGotFromVec = rad2deg(radians);
-
     SDL_SetRenderDrawColor(this->window->renderer, 247, 0, 49, 255);
     SDL_RenderDrawLineF(this->window->renderer, tl1.p1.x, tl1.p1.y, tl1.p2.x, tl1.p2.y);
 
@@ -170,11 +124,9 @@ void TestsModule::render(float dt)
     this->circle.drawCircle(this->window->renderer, (int32_t)rLeg.x, (int32_t)rLeg.y, (int32_t)this->radius);
     this->circle.drawCircle(this->window->renderer, (int32_t)tl1.p2.x, (int32_t)tl1.p2.y, (int32_t)this->radius);
 
-    if (this->keyboard->printData)
-    {
-        std::cout << "Position of P2 of Line: x: " << posX << " y: " << posY << "\n";
+    if (keyboard->printData)
         this->debugging();
-    }
+
 }
 
 void TestsModule::debugging()
