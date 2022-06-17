@@ -2,7 +2,6 @@
 
 #include <cmath>
 
-
 /**
  * draw triangle
  */
@@ -20,7 +19,7 @@ void drawShape(Window *w, std::vector<vec2> points)
 {
     for (int i = 1; i < points.size(); i++)
     {
-        //std::cout << "x1: " << points[i - 1].x << " - y1: " << points[i - 1].y << " - x2: " << points[i].x << " - y2: " << points[i].y << "\n";
+        // std::cout << "x1: " << points[i - 1].x << " - y1: " << points[i - 1].y << " - x2: " << points[i].x << " - y2: " << points[i].y << "\n";
         SDL_RenderDrawLineF(w->renderer, points[i - 1].x, points[i - 1].y, points[i].x, points[i].y);
     }
 }
@@ -37,10 +36,13 @@ MainGame::MainGame(Window *window, Mouse *mouse, Keyboard *keyboard)
     this->mouse->firstMouse = true;
 
     // Load background texture
-    //this->background = new Texture(this->window, "../assets/images/space_1.png");
+    this->background = new Texture(this->window, "../assets/images/space_1.png", 0);
+
+    // Load gun1
+    this->gun1 = new Texture(this->window, "../assets/weapons/shotgun1.png", 1);
 
     // Load wall
-    //this->wall = new Texture(this->window, "../assets/Walls/Wall64.png");
+    // this->wall = new Texture(this->window, "../assets/Walls/Wall64.png");
 }
 
 void MainGame::setMinimapPort()
@@ -101,7 +103,7 @@ void MainGame::renderMinimap(float dt)
     minimapTriangle.p3.y = this->player.transfTriangle.p3.y * yConvRatio;
 
     drawTriangle(this->window, minimapTriangle);
-    
+
     // draw rays
     for (int i = 0; i < MAX_RAYS; i++)
     {
@@ -121,7 +123,7 @@ void MainGame::renderMinimap(float dt)
 
 void MainGame::renderWorld(float dt)
 {
-    
+
     /*
     ====================================
     Player stuff
@@ -140,7 +142,7 @@ void MainGame::renderWorld(float dt)
     SDL_RenderSetViewport(this->window->renderer, &this->VPworld);
 
     // render background
-    //this->background->render(this->window, 0, 0);
+    this->background->render(this->window, 0, 0);
 
     // on top of that load floor textures
     SDL_SetRenderDrawColor(this->window->renderer, 121, 223, 114, 255);
@@ -181,6 +183,18 @@ void MainGame::renderWorld(float dt)
         SDL_RenderFillRectF(this->window->renderer, &wall);
     }
 
+    // render gun
+    this->gun1->render(this->window, this->window->getWidth() - this->gun1->getWidth(), this->window->getHeight() - this->gun1->getHeight());
+
+    // render croshair
+    SDL_SetRenderDrawColor(this->window->renderer, 150, 255, 51, 255);
+    vec2 P1 = vec2(this->window->getWidth()/2 - 5.0f, this->window->getHeight()/2);
+    vec2 P2 = vec2(this->window->getWidth()/2 + 5.0f, this->window->getHeight()/2);
+    SDL_RenderDrawLineF(this->window->renderer, P1.x, P1.y, P2.x, P2.y);
+    P1 = vec2(this->window->getWidth()/2, this->window->getHeight()/2 + 5.0f);
+    P2 = vec2(this->window->getWidth()/2, this->window->getHeight()/2 - 5.0f);
+    SDL_RenderDrawLineF(this->window->renderer, P1.x, P1.y, P2.x, P2.y);
+    
     if (this->keyboard->printData)
     {
         this->debugging();

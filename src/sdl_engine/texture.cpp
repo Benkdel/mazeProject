@@ -11,9 +11,12 @@ Texture::Texture()
     this->status = false;
 }
 
-Texture::Texture(Window *w, const char *filePath)
+Texture::Texture(Window *w, const char *filePath, int loadType)
 {
-    this->load(w, filePath);
+    if (loadType == 0)
+        this->load(w, filePath);
+    if (loadType == 1)
+        this->simpleLoad(w, filePath);
 }
 
 Texture::~Texture()
@@ -21,10 +24,46 @@ Texture::~Texture()
     this->cleanup();
 }
 
+void Texture::simpleLoad(Window *w, const char *filepath)
+{
+    //The final texture
+	SDL_Texture* newTexture = NULL;
+
+	//Load image at specified path
+	SDL_Surface* loadedSurface = IMG_Load(filepath);
+	if(loadedSurface == NULL)
+	{
+		//printf( "Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError() );
+	}
+	else
+	{
+		//Color key image
+		SDL_SetColorKey(loadedSurface, SDL_TRUE, SDL_MapRGB(loadedSurface->format, 0, 0xFF, 0));
+
+		//Create texture from surface pixels
+        newTexture = SDL_CreateTextureFromSurface(w->renderer, loadedSurface);
+		if( newTexture == NULL )
+		{
+			//printf( "Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError() );
+		}
+		else
+		{
+			//Get image dimensions
+			this->w = loadedSurface->w;
+			this->h = loadedSurface->h;
+		}
+
+		//Get rid of old loaded surface
+		SDL_FreeSurface(loadedSurface);
+	}
+
+	this->tex = newTexture;
+}
+
 void Texture::load(Window *w, const char *filePath)
 {
     // free prev texture
-    this->cleanup();
+    //this->cleanup();
 
     // The final texture
     SDL_Texture *newTexture = NULL;
@@ -44,6 +83,8 @@ void Texture::load(Window *w, const char *filePath)
         return;
     }
 
+    SDL_SetColorKey(formattedSurface, SDL_TRUE, SDL_MapRGB(formattedSurface->format, 0x0, 0xFF, 0x0));
+    
     // create texture from suf pixels
     newTexture = SDL_CreateTexture(w->renderer, SDL_GetWindowPixelFormat(w->window), SDL_TEXTUREACCESS_STREAMING, formattedSurface->w, formattedSurface->h);
     if (newTexture == NULL)

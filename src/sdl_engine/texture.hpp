@@ -12,12 +12,14 @@ public:
     Texture();
 
     // Constructor
-    Texture(Window *w, const char *filePath);
+    Texture(Window *w, const char *filePath, int loadType);
 
     // destructor
     ~Texture();
 
     void load(Window *w, const char *filePath);
+    void simpleLoad(Window *w, const char *filePath);
+
     void setBlending(SDL_BlendMode blending);
     void alphaMod(Uint8 alpha);
     void render(Window *w, int x, int y, int witdh = 0, int height = 0);
