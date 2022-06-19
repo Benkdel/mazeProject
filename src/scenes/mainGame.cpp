@@ -35,14 +35,20 @@ MainGame::MainGame(Window *window, Mouse *mouse, Keyboard *keyboard)
 
     this->mouse->firstMouse = true;
 
+    // pre-compute distance from player to projection plane (or screen)
+    this->playerToScreenDistance = this->window->getWidth() / (atan(FOV/2));
+
     // Load background texture
-    this->background = new Texture(this->window, "../assets/images/space_1.png", 0);
+    this->background = new Texture(this->window, "../assets/Images/space_1.png", 0);
 
     // Load gun1
     this->gun1 = new Texture(this->window, "../assets/weapons/shotgun1.png", 1);
 
     // Load wall
-    // this->wall = new Texture(this->window, "../assets/Walls/Wall64.png");
+    this->wall = new Texture(this->window, "../assets/Walls/RedBricks.png", 1);
+
+    // load floors
+    this->floor = new Texture(this->window, "../assets/Floors/floor.png", 1);
 }
 
 void MainGame::setMinimapPort()
@@ -145,9 +151,11 @@ void MainGame::renderWorld(float dt)
     this->background->render(this->window, 0, 0);
 
     // on top of that load floor textures
-    SDL_SetRenderDrawColor(this->window->renderer, 121, 223, 114, 255);
+    SDL_SetRenderDrawColor(this->window->renderer, 220, 209, 136, 255);
     SDL_Rect floor = {0, this->VPworld.h / 2, this->VPworld.w, this->VPworld.h / 2};
     SDL_RenderFillRect(this->window->renderer, &floor);
+        
+    SDL_Rect texturePart;
 
     /*
     ====================================
@@ -160,27 +168,38 @@ void MainGame::renderWorld(float dt)
     SDL_FRect wall;
     for (int i = 0; i < MAX_RAYS; i++)
     {
-        // fix fish eye
-        float aDist = this->player.rays[i].angle - this->player.angle;
-        aDist = (aDist < 0.0f) ? 360.0f + aDist : aDist;
-        aDist = (aDist > 360.0f) ? aDist - 360.0f + 0.0001f : aDist;
+        if (this->player.rays[i].results.hit)
+        {
+            // fix fish eye
+            float aDist = FixAng(this->player.rays[i].angle - this->player.angle);
+            float modDistance = this->player.rays[i].distance * cosf(deg2rad(aDist));
 
-        float modDistance = this->player.rays[i].distance * cosf(deg2rad(aDist));
+            // compute wall height
+            float wallHeight = ((float)CELL_SIZE * this->playerToScreenDistance) / modDistance;
 
-        float wallHeight = (float)(this->VPworld.h * CELL_SIZE) / modDistance;
-        if (wallHeight > this->VPworld.h - 2 * CELL_SIZE)
-            wallHeight = this->VPworld.h - 2 * CELL_SIZE;
+            // get offset for rendering texture
+            int cellX = this->player.rays[i].results.intersection.x;
+            int cellY = this->player.rays[i].results.intersection.y;
+            SDL_Rect cell = this->map.getCell(vec2(cellX, cellY)).rect;
+            float offset;
 
-        if (this->player.rays[i].results.HitDir == 0)
-            SDL_SetRenderDrawColor(this->window->renderer, 128, 128, 128, 255);
-        else
-            SDL_SetRenderDrawColor(this->window->renderer, 96, 96, 96, 255);
+            if (this->player.rays[i].results.HitDir == 0) // horizontal hit
+                offset = this->player.rays[i].results.intersection.y - cell.y;
+            else // vertical hit
+                offset = this->player.rays[i].results.intersection.x - cell.x;
+            
+            offset /= CELL_SIZE;
+            offset *= this->wall->getWidth();
 
-        wall.x = i * wallWidth;
-        wall.y = this->VPworld.h / 2 - wallHeight / 2;
-        wall.w = wallWidth;
-        wall.h = wallHeight;
-        SDL_RenderFillRectF(this->window->renderer, &wall);
+            // render wall
+            wall.x = i;
+            wall.y = this->VPworld.h / 2 - wallHeight / 2;
+            wall.w = wallWidth;
+            wall.h = wallHeight;
+            
+            texturePart = { (int)offset, 0, (int)wallWidth, (int)this->wall->getWidth() };
+            this->wall->render(this->window, wall.x, wall.y, wallWidth, wall.h, &texturePart);
+        }
     }
 
     // render gun
@@ -195,6 +214,7 @@ void MainGame::renderWorld(float dt)
     P2 = vec2(this->window->getWidth()/2, this->window->getHeight()/2 - 5.0f);
     SDL_RenderDrawLineF(this->window->renderer, P1.x, P1.y, P2.x, P2.y);
     
+
     if (this->keyboard->printData)
     {
         this->debugging();

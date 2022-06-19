@@ -72,8 +72,8 @@ float getAngleFromVectors(vec2 v1, vec2 v2)
     float radians;
     float adjacent = v2.x - v1.x;
     float opposite = v2.y - v1.y;
-    radians = atan(opposite/adjacent);
-    
+    radians = atan(opposite / adjacent);
+
     return rad2deg(radians);
 }
 
@@ -118,6 +118,19 @@ vec2 scale2Dvec(vec2 v, float size)
     newVec.y = v.y * size;
 
     return newVec;
+}
+
+float FixAng(float a)
+{
+    if (a > 359)
+    {
+        a -= 360;
+    }
+    if (a < 0)
+    {
+        a += 360;
+    }
+    return a;
 }
 
 line::line() {}

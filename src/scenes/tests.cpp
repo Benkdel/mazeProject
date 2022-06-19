@@ -4,6 +4,8 @@
 
 #include <cmath>
 
+Texture *tex;
+
 TestsModule::TestsModule(Window *window, Mouse *mouse, Keyboard *keyboard)
     : window(window), mouse(mouse), keyboard(keyboard)
 {
@@ -14,22 +16,23 @@ TestsModule::TestsModule(Window *window, Mouse *mouse, Keyboard *keyboard)
 
     this->centerPoint = vec2((float)this->scr_W / 2, (float)this->scr_H / 2);
 
-    // start line in 0 degrees, along the x axis with size 5
-    this->l1 = line(vec2(-0.5f, 0.0f), vec2(0.5f, 0.0f));
+    tex = new Texture(this->window, "../assets/Floors/floor.png", 1);
 
-    // set up legs of triangle
-    this->leftLeg = vec2(-0.5f, 0.5f);
-    this->rightLeg = vec2(-0.5f, -0.5f);
+    // mGround = new Sprite(mapSize, mapSize);
 
-    // init angle should be 0, line is parallel to the X-axis
-    this->angle = 0.0f;
+    // for (int x = 0; x < mapSize; x += 32)
+    // {
+    //     for (int y = 0; y < mapSize; y++)
+    //     {
+    //         mGround->setColor(x, y, RGB::magenta);
+    //         mGround->setColor(x + 1, y, RGB::crimson);
+    //         mGround->setColor(x - 1, y, RGB::red);
 
-    this->radius = 2.0f * CONST_PI;
-
-    this->mouse->firstMouse = true;
-
-    this->lastX = 1280 / 2;
-    this->lastY = 960 / 2;
+    //         mGround->setColor(y, x, RGB::stateBlue);
+    //         mGround->setColor(y, x + 1, RGB::gold);
+    //         mGround->setColor(y, x - 1, RGB::white);
+    //     }
+    // }
 }
 
 void TestsModule::setPort()
@@ -42,98 +45,129 @@ void TestsModule::setPort()
 
 void TestsModule::updateAngle(float dt)
 {
-    // update angle correctly
-    int x, y;
-
-    SDL_GetMouseState(&x, &y);
-
-    float deltaX = x - this->lastX;
-    
-    if (this->lastX != x)
-    {
-        std::cout << "DeltaX: " << x - this->lastX << "\n";
-        this->lastX = x;
-    }
-
-    // for now I just want rotation HORIZONTAL
-    this->angle += deltaX;
-
-
-    if (this->angle < 0.0f)
-        this->angle = 360.0f + this->angle;
-    if (this->angle > 360.0f)
-        this->angle = this->angle - 360.0f + 0.00000001f;
+    // pass
 }
 
 void TestsModule::updatePos(float dt)
 {
-    // apply motion
-    this->centerPoint.x += cosf(deg2rad(this->angle)) * keyboard->velocity * dt;
-    this->centerPoint.y += -sinf(deg2rad(this->angle)) * keyboard->velocity * dt;
-
-    this->keyboard->velocity = 0.0f;
+    // pass
 }
 
 void TestsModule::render(float dt)
 {
-    // execute testing
-    line tl1;
-    vec2 lLeg;
-    vec2 rLeg;
 
-    // scale line by size
-    float size = 200.0f;
-    tl1.p1 = scale2Dvec(this->l1.p1, size);
-    tl1.p2 = scale2Dvec(this->l1.p2, size);
+    SDL_Event event;
 
-    // scale legs by same size
-    lLeg = scale2Dvec(this->leftLeg, size);
-    rLeg = scale2Dvec(this->rightLeg, size);
+    while (SDL_PollEvent(&event) != 0)
+    {
+        if (event.type == SDL_QUIT)
+            window->windowShouldClose = true;
+    }
+    const uint8_t *currentKeyStates = SDL_GetKeyboardState(NULL);
+    if (currentKeyStates[SDL_SCANCODE_Q])
+        fNear += 0.1f * dt;
+    if (currentKeyStates[SDL_SCANCODE_A])
+        fNear -= 0.1f * dt;
 
-    // rotate line towards angle
-    tl1.p1 = rotate2Dvec(tl1.p1, -this->angle);
-    tl1.p2 = rotate2Dvec(tl1.p2, -this->angle);
+    if (currentKeyStates[SDL_SCANCODE_W])
+        fFar += 0.1f * dt;
+    if (currentKeyStates[SDL_SCANCODE_S])
+        fFar -= 0.1f * dt;
 
-    // rotate legs towards angle
-    lLeg = rotate2Dvec(lLeg, -this->angle);
-    rLeg = rotate2Dvec(rLeg, -this->angle);
+    if (currentKeyStates[SDL_SCANCODE_Z])
+        fFovHalf += 0.1f * dt;
+    if (currentKeyStates[SDL_SCANCODE_X])
+        fFovHalf -= 0.1f * dt;
 
-    // transform to center position
-    tl1.p1 = tl1.p1 + this->centerPoint;
-    tl1.p2 = tl1.p2 + this->centerPoint;
+    if (currentKeyStates[SDL_SCANCODE_LEFT])
+        fWorldA -= 5.0f * dt;
+    if (currentKeyStates[SDL_SCANCODE_RIGHT])
+        fWorldA += 5.0f * dt;
+    if (currentKeyStates[SDL_SCANCODE_UP])
+    {
+        fWorldX += cosf(fWorldA) * dt;
+        fWorldY += sinf(fWorldA) * dt;
+    }
+    if (currentKeyStates[SDL_SCANCODE_DOWN])
+    {
+        fWorldX -= cosf(fWorldA) * dt;
+        fWorldY -= sinf(fWorldA) * dt;
+    }
 
-    // transform legs to center position
-    lLeg = lLeg + this->centerPoint;
-    rLeg = rLeg + this->centerPoint;
+    // this operations give you 4 coordinate points for the map
+    /*  Far x1, Far y1 (*) ___________________ (*) Far x2, Far y2
+                          |                   |
+                           |                 |
+                            |               |
+                             |             |
+         Near x1, Near y1 (*) |___________| (*) Near x2, Near y2
+    */
 
-    SDL_SetRenderDrawColor(this->window->renderer, 247, 0, 49, 255);
-    SDL_RenderDrawLineF(this->window->renderer, tl1.p1.x, tl1.p1.y, tl1.p2.x, tl1.p2.y);
+    float fFarX1 = fWorldX + cosf(fWorldA - fFovHalf) * fFar;
+    float fFarY1 = fWorldY + sinf(fWorldA - fFovHalf) * fFar;
 
-    // draw legs of triangle
-    SDL_RenderDrawLineF(this->window->renderer, lLeg.x, lLeg.y, tl1.p2.x, tl1.p2.y);
-    SDL_RenderDrawLineF(this->window->renderer, rLeg.x, rLeg.y, tl1.p2.x, tl1.p2.y);
+    float fNearX1 = fWorldX + cosf(fWorldA - fFovHalf) * fNear;
+    float fNearY1 = fWorldY + sinf(fWorldA - fFovHalf) * fNear;
 
-    // draw base
-    SDL_RenderDrawLineF(this->window->renderer, lLeg.x, lLeg.y, rLeg.x, rLeg.y);
+    float fFarX2 = fWorldX + cosf(fWorldA + fFovHalf) * fFar;
+    float fFarY2 = fWorldY + sinf(fWorldA + fFovHalf) * fFar;
 
-    // draw circle at center of the triangle
-    this->circle.drawCircle(this->window->renderer, (int32_t)this->centerPoint.x, (int32_t)this->centerPoint.y, (int32_t)this->radius);
+    float fNearX2 = fWorldX + cosf(fWorldA + fFovHalf) * fNear;
+    float fNearY2 = fWorldY + sinf(fWorldA + fFovHalf) * fNear;
 
-    // draw circles at the 3 points of the triangle
-    this->circle.drawCircle(this->window->renderer, (int32_t)lLeg.x, (int32_t)lLeg.y, (int32_t)this->radius);
-    this->circle.drawCircle(this->window->renderer, (int32_t)rLeg.x, (int32_t)rLeg.y, (int32_t)this->radius);
-    this->circle.drawCircle(this->window->renderer, (int32_t)tl1.p2.x, (int32_t)tl1.p2.y, (int32_t)this->radius);
+    float scr_H = (float)this->window->getHeight();
+    float scr_W = (float)this->window->getWidth();
+    float floorsOffset = (int)scr_H / 4;
+
+    int offsetY = 1;
+    int offsetX = 1;
+
+    float sampDepthDelta = 1.0f / floorsOffset;
+    float sampWidthDelta = 1.0f / scr_W;
+
+    for (int y = 1; y < floorsOffset; y++)
+    {
+        float fSampleDepth = sampDepthDelta * y;
+
+        // create points representing the scanline
+        float fStartX = (fFarX1 - fNearX1) / (fSampleDepth) + fNearX1;
+        float fStartY = (fFarY1 - fNearY1) / (fSampleDepth) + fNearY1;
+
+        float fEndX = (fFarX2 - fNearX2) / (fSampleDepth) + fNearX2;
+        float fEndY = (fFarY2 - fNearY2) / (fSampleDepth) + fNearY2;
+
+        for (int x = 1; x < scr_W; x += offsetX)
+        {
+            // sample width
+            float fSampleWidth = sampWidthDelta * x;
+
+            // find coords - interpolating
+            float fSampleX = (fEndX - fStartX) * fSampleWidth + fStartX;
+            float fSampleY = (fEndY - fStartY) * fSampleWidth + fStartY;
+
+            fSampleX = fmod(fSampleX, 1.0f);
+            fSampleY = fmod(fSampleY, 1.0f);
+
+            int sx = (int)(fSampleX * (float)tex->getWidth());
+            int sy = (int)(fSampleY * (float)tex->getHeight() - 1.0f);
+
+            SDL_Rect texPart;
+            texPart = {sx, sy, offsetX, offsetY};
+            tex->render(this->window, x, y + (int)scr_H/2 + floorsOffset, offsetX, offsetY, &texPart);
+            // RGB::rgb color = mGround->SampleRGBColor(fSampleX, fSampleY);
+            // SDL_SetRenderDrawColor(this->window->renderer, color.r, color.g, color.b, 255);            
+            // SDL_RenderDrawPoint(this->window->renderer, x, y + (int)(scr_H / 2));
+        }
+    }
 
     if (keyboard->printData)
+    {
         this->debugging();
-
+    }
 }
 
 void TestsModule::debugging()
 {
-    std::cout << "Line angle: " << this->angle << "\n";
-    std::cout << "Keyboard angle: " << this->keyboard->angle << "\n";
-    std::cout << "Angle obtained from line vectors: " << this->angleGotFromVec << "\n";
 
     this->keyboard->printData = false;
 }

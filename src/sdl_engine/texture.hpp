@@ -22,13 +22,13 @@ public:
 
     void setBlending(SDL_BlendMode blending);
     void alphaMod(Uint8 alpha);
-    void render(Window *w, int x, int y, int witdh = 0, int height = 0);
+    void render(Window *w, int x, int y, int witdh = 0, int height = 0, SDL_Rect *part = NULL);
     void cleanup();
 
     // Pixel manipulators
     bool lockTexture();
     bool unlockTexture();
-    
+
     inline int getWidth() { return this->w; }
     inline int getHeight() { return this->h; }
     inline void *getPixels() { return this->pixels; }

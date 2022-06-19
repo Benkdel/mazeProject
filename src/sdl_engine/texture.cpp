@@ -83,8 +83,6 @@ void Texture::load(Window *w, const char *filePath)
         return;
     }
 
-    SDL_SetColorKey(formattedSurface, SDL_TRUE, SDL_MapRGB(formattedSurface->format, 0x0, 0xFF, 0x0));
-    
     // create texture from suf pixels
     newTexture = SDL_CreateTexture(w->renderer, SDL_GetWindowPixelFormat(w->window), SDL_TEXTUREACCESS_STREAMING, formattedSurface->w, formattedSurface->h);
     if (newTexture == NULL)
@@ -99,18 +97,41 @@ void Texture::load(Window *w, const char *filePath)
     // copy loaded/formatted surface pixels
     memcpy(this->pixels, formattedSurface->pixels, formattedSurface->pitch * formattedSurface->h);
 
+    this->w = formattedSurface->w;
+    this->h = formattedSurface->h;
+
+    // Get pixel data in editable format
+    Uint32* pixels = (Uint32*)this->pixels;
+    int pixelCount = (this->pitch / 4) * this->h;
+
+    // Map colors
+    Uint32 colorKey = SDL_MapRGB(formattedSurface->format, 0, 0xFF, 0xFF);
+    Uint32 transparent = SDL_MapRGBA(formattedSurface->format, 0x00, 0xFF, 0xFF, 0x00);
+
+    //Color key pixels
+    for (int i = 0; i < pixelCount; ++i)
+    {
+        if( pixels[i] == colorKey )
+        {
+            pixels[i] = transparent;
+        }
+    }
+
     // Unlock texture to update
     SDL_UnlockTexture(newTexture);
     this->pixels = NULL;
-
-    this->w = formattedSurface->w;
-    this->h = formattedSurface->h;
+    
     this->status = true;
     this->tex = newTexture;
 
     // clean memory
     SDL_FreeSurface(formattedSurface);
     SDL_FreeSurface(loadedSurface);
+}
+
+Uint32 getPixel32(unsigned int x, unsigned int y)
+{
+
 }
 
 void Texture::cleanup()
@@ -134,7 +155,7 @@ void Texture::alphaMod(Uint8 alpha)
     SDL_SetTextureAlphaMod(this->tex, alpha);
 }
 
-void Texture::render(Window *w, int x, int y, int width, int height)
+void Texture::render(Window *w, int x, int y, int width, int height, SDL_Rect *part)
 {
     // set rendering space and render to screen
     this->dimensions.x = x;
@@ -142,7 +163,7 @@ void Texture::render(Window *w, int x, int y, int width, int height)
     this->dimensions.w = (width == 0) ? this->w : width;
     this->dimensions.h = (height == 0) ? this->h : height;
 
-    SDL_RenderCopy(w->renderer, this->tex, NULL, &this->dimensions);
+    SDL_RenderCopy(w->renderer, this->tex, part, &this->dimensions);
 }
 
 bool Texture::lockTexture()

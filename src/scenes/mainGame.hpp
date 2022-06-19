@@ -30,6 +30,8 @@ public:
 
     void cleanup();
 
+    inline float getP2Sdistance() { return this->playerToScreenDistance; }
+
 private:
     Window *window;
     Mouse *mouse;
@@ -38,8 +40,10 @@ private:
     Texture *background;
     Texture *wall;
     Texture *gun1;
+    Texture *floor;
 
-    
+    float playerToScreenDistance;
+
     Map map;
     Player player;
 

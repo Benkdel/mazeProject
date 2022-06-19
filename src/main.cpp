@@ -31,14 +31,14 @@ int main(int argc, char **argv)
     SDL_Event event;
     
 // =========== set what application to run =============
-    const int app_choosed = 0;
+    const int app_choosed = 1;
 // =====================================================
 
     const int SCREEN_WIDTH = CELL_SIZE * GRID_WIDTH;
     const int SCREEN_HEIGHT = CELL_SIZE * GRID_HEIGHT;
 
     Window window(SCREEN_WIDTH, SCREEN_HEIGHT);
-    Map map;
+    //Map map;
 
     unsigned int lastTime = 0.0f;
     unsigned int currentTime = 0.0f;
@@ -60,8 +60,6 @@ int main(int argc, char **argv)
     /* ================================== */
 
     SDL_SetRenderDrawBlendMode(window.renderer, SDL_BLENDMODE_BLEND);
-
-    
 
     if (app_choosed == Application::Game)
     {
@@ -92,7 +90,6 @@ int main(int argc, char **argv)
             /* Update the surface */
             SDL_RenderPresent(window.renderer);
 
-
         }
 
         mainGame.cleanup();
@@ -100,26 +97,24 @@ int main(int argc, char **argv)
 
     if (app_choosed == Application::Tests)
     {
-        TestsModule motionTesting(&window, &mouse, &keyboard);
+        TestsModule tests(&window, &mouse, &keyboard);
 
         while (!window.windowShouldClose)
         {
-            SDL_SetRelativeMouseMode((SDL_bool)setRelMouseMod);
+            //SDL_SetRelativeMouseMode((SDL_bool)setRelMouseMod);
 
             currentTime = SDL_GetTicks();
             deltaTime = (float)(currentTime - lastTime) / 1000.0f;
             lastTime = currentTime;
 
             // handle events on queue
-            pollEvents(&window, &mouse, &keyboard, &event, deltaTime);
+            //pollEvents(&window, &mouse, &keyboard, &event, deltaTime);
 
             // Clear screen
             SDL_SetRenderDrawColor(window.renderer, 0, 1, 2, 1);
             SDL_RenderClear(window.renderer);
 
-            motionTesting.updateAngle(deltaTime);
-            motionTesting.updatePos(deltaTime);
-            motionTesting.render(deltaTime);
+            tests.render(deltaTime);
 
             // reset velocity
             keyboard.velocity = 0.0f;
@@ -128,7 +123,6 @@ int main(int argc, char **argv)
             SDL_RenderPresent(window.renderer);
         }
 
-        motionTesting.cleanup();
     }
 
     window.cleanup();
