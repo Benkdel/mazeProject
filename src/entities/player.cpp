@@ -11,9 +11,9 @@
 
 Player::Player() {}
 
-void Player::init(Map *w)
+void Player::init(Map *m)
 {
-    this->pos = vec2(400.0f, 400.0f);
+    this->pos = m->getPlayerPos();
 
     this->angle = 0.0f; // because we start with the triangle pointing to the left
 
@@ -28,11 +28,7 @@ void Player::updateCurrentAngle(Mouse *m, float dt)
     float deltaX = m->position.x - m->lastPos.x;
     m->lastPos.x = m->position.x;
     this->angle += deltaX * 0.5f;
-
-    if (this->angle < 0.0f)
-        this->angle = 360.0f + this->angle;
-    if (this->angle > 360.0f)
-        this->angle = this->angle - 360.0f + 0.00000001f;
+    this->angle = clampAngle(this->angle);
 }
 
 void Player::updatePos(Keyboard *kb, float dt, Map *map)
@@ -65,10 +61,9 @@ void Player::updatePos(Keyboard *kb, float dt, Map *map)
     kb->velocity = 0.0f;
 }
 
-void Player::translate()
+void Player::translate(int size, int numRays)
 {
     // scale
-    float size = 30.0f;
     this->transfTriangle.p1 = scale2Dvec(this->triangle.p1, size);
     this->transfTriangle.p2 = scale2Dvec(this->triangle.p2, size);
     this->transfTriangle.p3 = scale2Dvec(this->triangle.p3, size);
@@ -84,24 +79,17 @@ void Player::translate()
     this->transfTriangle.p2 = this->transfTriangle.p2 + this->pos;
     this->transfTriangle.p3 = this->transfTriangle.p3 + this->pos;
 
-    // reset rays
-    for (int i = 0; i < MAX_RAYS; i++)
-        this->rays[i].rayDir = vec2(0.0f, 0.0f);
-
     // set FoV vectors or Rays
     this->lookAt = this->transfTriangle.p2;
 
-    float fAngle = this->angle - (FOV / 2);      // substract 30 degrees from current view angle
-    float colAngleDelta = FOV / (float)MAX_RAYS; // calculate delta angle for each column
-
-    if (fAngle < 0.0f)
-        fAngle = 360.0f + fAngle;
-    if (fAngle > 360.0f)
-        fAngle = fAngle - 360.0f + 0.0001f;
+    float fAngle = clampAngle(this->angle - (FOV / 2)); // substract 30 degrees from current view angle
+    float colAngleDelta = FOV / (float)numRays; // calculate delta angle for each column
 
     // store subsequent angles to the rigth starting from p angle - 30 deg
-    for (int i = 0; i < MAX_RAYS; i++)
+    this->rays.clear();
+    for (int i = 0; i < numRays; i++)
     {
+        this->rays.push_back(Ray());
         this->rays[i].angle = fAngle + colAngleDelta * i; // store angle to use later
         this->rays[i].rayDir = getVecFromAngle(1.0f, this->rays[i].angle);
     }
@@ -109,7 +97,7 @@ void Player::translate()
 
 void Player::rayCastDDD(Map *map)
 {
-    for (int i = 0; i < MAX_RAYS; i++)
+    for (int i = 0; i < map->getWidth() * map->getCellSize(); i++)
     {
         this->rays[i].castDDD(this->pos, this->rays[i].rayDir, map);
     }

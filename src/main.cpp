@@ -31,14 +31,20 @@ int main(int argc, char **argv)
     SDL_Event event;
     
 // =========== set what application to run =============
-    const int app_choosed = 1;
+    const int app_choosed = 0;
 // =====================================================
 
-    const int SCREEN_WIDTH = CELL_SIZE * GRID_WIDTH;
-    const int SCREEN_HEIGHT = CELL_SIZE * GRID_HEIGHT;
+    Map map;
+    bool mapLoaded = map.loadMap("../assets/Maps/largemap1");
+    if (!mapLoaded)
+    {
+        return -1;
+    }
+    
+    const int SCREEN_WIDTH = map.getWidth() * map.getCellSize();
+    const int SCREEN_HEIGHT = map.getHeight() * map.getCellSize();
 
     Window window(SCREEN_WIDTH, SCREEN_HEIGHT);
-    //Map map;
 
     unsigned int lastTime = 0.0f;
     unsigned int currentTime = 0.0f;
@@ -63,8 +69,7 @@ int main(int argc, char **argv)
 
     if (app_choosed == Application::Game)
     {
-        MainGame mainGame(&window, &mouse, &keyboard);
-        mainGame.initPlayers();
+        MainGame mainGame(&window, &map, &mouse, &keyboard);
 
         while (!window.windowShouldClose)
         {
@@ -89,9 +94,7 @@ int main(int argc, char **argv)
 
             /* Update the surface */
             SDL_RenderPresent(window.renderer);
-
         }
-
         mainGame.cleanup();
     }
 

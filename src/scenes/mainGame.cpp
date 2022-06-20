@@ -12,34 +12,25 @@ void drawTriangle(Window *w, Triangle t)
     SDL_RenderDrawLineF(w->renderer, t.p1.x, t.p1.y, t.p2.x, t.p2.y); // left to nose
 }
 
-/**
- * draw square
- */
-void drawShape(Window *w, std::vector<vec2> points)
-{
-    for (int i = 1; i < points.size(); i++)
-    {
-        // std::cout << "x1: " << points[i - 1].x << " - y1: " << points[i - 1].y << " - x2: " << points[i].x << " - y2: " << points[i].y << "\n";
-        SDL_RenderDrawLineF(w->renderer, points[i - 1].x, points[i - 1].y, points[i].x, points[i].y);
-    }
-}
-
-MainGame::MainGame(Window *window, Mouse *mouse, Keyboard *keyboard)
-    : window(window), mouse(mouse), keyboard(keyboard)
+MainGame::MainGame(Window *window, Map *map, Mouse *mouse, Keyboard *keyboard)
+    : window(window), map(map), mouse(mouse), keyboard(keyboard)
 {
 
     // initialization
-    this->setMap();
+    this->player.init(this->map);
+
     this->setMinimapPort();
     this->setWorldPort();
 
     this->mouse->firstMouse = true;
 
+    mNumRays = map->getWidth() * map->getCellSize();
+
     // pre-compute distance from player to projection plane (or screen)
     this->playerToScreenDistance = this->window->getWidth() / (atan(FOV/2));
 
     // Load background texture
-    this->background = new Texture(this->window, "../assets/Images/space_1.png", 0);
+    this->background = new Texture(this->window, "../assets/Images/space_1.png", 1);
 
     // Load gun1
     this->gun1 = new Texture(this->window, "../assets/weapons/shotgun1.png", 1);
@@ -48,37 +39,7 @@ MainGame::MainGame(Window *window, Mouse *mouse, Keyboard *keyboard)
     this->wall = new Texture(this->window, "../assets/Walls/RedBricks.png", 1);
 
     // load floors
-    this->floor = new Texture(this->window, "../assets/Floors/floor.png", 1);
-}
-
-void MainGame::setMinimapPort()
-{
-    this->VPminimap.x = 0;
-    this->VPminimap.y = 0;
-    this->VPminimap.w = CELL_SIZE * 8;
-    this->VPminimap.h = CELL_SIZE * 8;
-}
-void MainGame::setWorldPort()
-{
-    this->VPworld.x = 0;
-    this->VPworld.y = 0;
-    this->VPworld.w = this->window->getWidth();
-    this->VPworld.h = this->window->getHeight();
-}
-
-void MainGame::setMap()
-{
-    this->map.setWalls();
-}
-
-void MainGame::initPlayers()
-{
-    this->player.init(&this->map);
-}
-
-void MainGame::initEnemies()
-{
-    // nothing for now
+    this->floor1 = new Texture(this->window, "../assets/Floors/floor.png", 1);
 }
 
 void MainGame::renderMinimap(float dt)
@@ -92,7 +53,7 @@ void MainGame::renderMinimap(float dt)
     SDL_RenderFillRect(this->window->renderer, &r);
 
     // render minimap to port
-    this->map.renderMiniMap(this->window, &this->VPminimap, &this->VPworld);
+    this->map->renderMiniMap(this->window, &this->VPminimap, &this->VPworld);
 
     // render player position and rays to port
     float xConvRatio = ((float)this->VPminimap.w / (float)this->VPworld.w);
@@ -111,7 +72,7 @@ void MainGame::renderMinimap(float dt)
     drawTriangle(this->window, minimapTriangle);
 
     // draw rays
-    for (int i = 0; i < MAX_RAYS; i++)
+    for (int i = 0; i < mNumRays; i++)
     {
         if (this->player.rays[i].results.hit)
             SDL_SetRenderDrawColor(window->renderer, 153, 0, 76, 255);
@@ -137,12 +98,12 @@ void MainGame::renderWorld(float dt)
     */
 
     // player updates and translations
-    this->player.updatePos(this->keyboard, dt, &this->map);
+    this->player.updatePos(this->keyboard, dt, this->map);
     this->player.updateCurrentAngle(this->mouse, dt);
-    this->player.translate();
+    this->player.translate(map->getPlayerSize(), mNumRays);
 
     // raycasting
-    this->player.rayCastDDD(&this->map);
+    this->player.rayCastDDD(this->map);
 
     // render world:
     SDL_RenderSetViewport(this->window->renderer, &this->VPworld);
@@ -157,46 +118,57 @@ void MainGame::renderWorld(float dt)
         
     SDL_Rect texturePart;
 
+    /* pre-computed values to render floors*/
+    float fFar = 0.3f;
+    float fNear = 0.03f;
+    float fWorldA = 0.0f;
+    float halfFoV = CONST_PI / 4.0f;
+
+    float scrheigth = this->VPworld.h;
+    float scrWidht = this->VPworld.w;
+    float halfScreen = (int)scrheigth >> 1;
+    int floorTexWidth = this->floor1->getWidth();
+    int floorTexHeight = this->floor1->getHeight();
+
     /*
     ====================================
     render walls based on rays length
     ====================================
     */
 
-    float wallWidth = (float)this->map.w / (float)MAX_RAYS;
+    float wallWidth = (float)(map->getWidth() * map->getCellSize()) / (float)mNumRays;
+    int midRow = halfScreen / map->getCellSize();
 
     SDL_FRect wall;
-    for (int i = 0; i < MAX_RAYS; i++)
+    for (int x = 0; x < mNumRays; x++)
     {
-        if (this->player.rays[i].results.hit)
+        if (this->player.rays[x].results.hit)
         {
             // fix fish eye
-            float aDist = FixAng(this->player.rays[i].angle - this->player.angle);
-            float modDistance = this->player.rays[i].distance * cosf(deg2rad(aDist));
+            float aDist = clampAngle(this->player.rays[x].angle - this->player.angle);
+            float modDistance = this->player.rays[x].distance * cosf(deg2rad(aDist));
 
             // compute wall height
-            float wallHeight = ((float)CELL_SIZE * this->playerToScreenDistance) / modDistance;
+            float wallHeight = ((float)map->getCellSize() * this->playerToScreenDistance) / modDistance;
 
             // get offset for rendering texture
-            int cellX = this->player.rays[i].results.intersection.x;
-            int cellY = this->player.rays[i].results.intersection.y;
-            SDL_Rect cell = this->map.getCell(vec2(cellX, cellY)).rect;
+            int cellX = this->player.rays[x].results.intersection.x;
+            int cellY = this->player.rays[x].results.intersection.y;
+            SDL_Rect cell = this->map->getCell(vec2(cellX, cellY)).rect;
             float offset;
 
-            if (this->player.rays[i].results.HitDir == 0) // horizontal hit
-                offset = this->player.rays[i].results.intersection.y - cell.y;
+            if (this->player.rays[x].results.HitDir == 0) // horizontal hit
+                offset = this->player.rays[x].results.intersection.y - cell.y;
             else // vertical hit
-                offset = this->player.rays[i].results.intersection.x - cell.x;
+                offset = this->player.rays[x].results.intersection.x - cell.x;
             
-            offset /= CELL_SIZE;
+            offset /= map->getCellSize();
             offset *= this->wall->getWidth();
 
-            // render wall
-            wall.x = i;
-            wall.y = this->VPworld.h / 2 - wallHeight / 2;
+            wall.x = x;
+            wall.y = halfScreen - wallHeight / 2;
             wall.w = wallWidth;
             wall.h = wallHeight;
-            
             texturePart = { (int)offset, 0, (int)wallWidth, (int)this->wall->getWidth() };
             this->wall->render(this->window, wall.x, wall.y, wallWidth, wall.h, &texturePart);
         }
@@ -214,7 +186,6 @@ void MainGame::renderWorld(float dt)
     P2 = vec2(this->window->getWidth()/2, this->window->getHeight()/2 - 5.0f);
     SDL_RenderDrawLineF(this->window->renderer, P1.x, P1.y, P2.x, P2.y);
     
-
     if (this->keyboard->printData)
     {
         this->debugging();
@@ -224,10 +195,31 @@ void MainGame::renderWorld(float dt)
 
 void MainGame::debugging()
 {
-    std::cout << "===============================================================================================\n";
-    std::cout << "Mouse position x: " << this->mouse->position.x << " y: " << this->mouse->position.y << "\n";
+    for (int y = 0; y < map->getHeight(); y++)
+    {
+        for (int x = 0; x < map->getHeight(); x++)
+        {
+            std::cout << map->mMapCells[y * map->getWidth() + x].value << " ";
+        }
+        std::cout << "\n";
+    }
 
     this->keyboard->printData = false;
+}
+
+void MainGame::setMinimapPort()
+{
+    this->VPminimap.x = 0;
+    this->VPminimap.y = 0;
+    this->VPminimap.w = map->getCellSize() * map->getMinMapSize();
+    this->VPminimap.h = map->getCellSize() * map->getMinMapSize();
+}
+void MainGame::setWorldPort()
+{
+    this->VPworld.x = 0;
+    this->VPworld.y = 0;
+    this->VPworld.w = this->window->getWidth();
+    this->VPworld.h = this->window->getHeight();
 }
 
 void MainGame::cleanup()

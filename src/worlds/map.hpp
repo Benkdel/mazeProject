@@ -19,19 +19,30 @@ public:
     
     // Empty constructor
     Map();
-
-    unsigned int x;
-    unsigned int y;
-    unsigned int w;
-    unsigned int h;
     
-    void setWalls();
+    bool loadMap(const char *filePath);
+    
     void renderMiniMap(Window *w, SDL_Rect *VPminimap, SDL_Rect *VPworld);
 
-    SDL_Rect recWalls;
-    Cell mapCells[GRID_HEIGHT][GRID_WIDTH];
-
+    std::vector<Cell> mMapCells;
     Cell getCell(vec2 vec);
+    
+    inline unsigned int getWidth() { return mWidth; }
+    inline unsigned int getHeight() { return mHeight; }
+    inline vec2 getPlayerPos() { return mInitPlayerPos; }
+    inline float getMaxRayL() { return mMaxRayLength; }
+    inline int getCellSize() { return mCellSize; }
+    inline int getPlayerSize() { return mPlayerSize; }
+    inline int getMinMapSize() { return mMinMapSize; }
+
+private:
+    unsigned int mWidth;
+    unsigned int mHeight;
+    int mCellSize;
+    int mMinMapSize;
+    vec2 mInitPlayerPos;
+    int mPlayerSize;
+    float mMaxRayLength;
 };
 
 #endif

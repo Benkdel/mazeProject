@@ -120,7 +120,7 @@ vec2 scale2Dvec(vec2 v, float size)
     return newVec;
 }
 
-float FixAng(float a)
+float clampAngle(float a)
 {
     if (a > 359)
     {

@@ -14,14 +14,10 @@
 class MainGame {
 public:
 
-    MainGame(Window *window, Mouse *mouse, Keyboard *keyboard);
+    MainGame(Window *window, Map *map, Mouse *mouse, Keyboard *keyboard);
 
     void setMinimapPort();
     void setWorldPort();
-
-    void setMap();
-    void initPlayers();
-    void initEnemies();
 
     void renderMinimap(float dt);
     void renderWorld(float dt);
@@ -32,6 +28,8 @@ public:
 
     inline float getP2Sdistance() { return this->playerToScreenDistance; }
 
+    int mNumRays;
+
 private:
     Window *window;
     Mouse *mouse;
@@ -40,11 +38,11 @@ private:
     Texture *background;
     Texture *wall;
     Texture *gun1;
-    Texture *floor;
+    Texture *floor1;
 
     float playerToScreenDistance;
 
-    Map map;
+    Map *map;
     Player player;
 
     SDL_Rect VPfiller;

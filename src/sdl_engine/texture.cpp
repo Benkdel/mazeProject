@@ -33,7 +33,7 @@ void Texture::simpleLoad(Window *w, const char *filepath)
 	SDL_Surface* loadedSurface = IMG_Load(filepath);
 	if(loadedSurface == NULL)
 	{
-		//printf( "Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError() );
+		std::cout << "Unable to load image " << filepath << " SDL_image Error: " << IMG_GetError() << "\n";
 	}
 	else
 	{
@@ -42,9 +42,9 @@ void Texture::simpleLoad(Window *w, const char *filepath)
 
 		//Create texture from surface pixels
         newTexture = SDL_CreateTextureFromSurface(w->renderer, loadedSurface);
-		if( newTexture == NULL )
+		if(newTexture == NULL)
 		{
-			//printf( "Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError() );
+       		std::cout << "Unable to create texture from " << filepath << " SDL Error: " << SDL_GetError() << "\n";
 		}
 		else
 		{

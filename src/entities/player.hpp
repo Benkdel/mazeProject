@@ -19,11 +19,11 @@ public:
     void init(Map *w);
     void updatePos(Keyboard *kb, float dt, Map *map);
     void updateCurrentAngle(Mouse *m, float dt);
-    void translate();
+    void translate(int size, int numRays);
     void rayCastDDD(Map *map);
     void clearRays();
 
-    Ray rays[MAX_RAYS];
+    std::vector<Ray> rays;
 
     vec2 pos;
     vec2 lookAt;
