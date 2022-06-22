@@ -26,45 +26,42 @@ Texture::~Texture()
 
 void Texture::simpleLoad(Window *w, const char *filepath)
 {
-    //The final texture
-	SDL_Texture* newTexture = NULL;
+    // The final texture
+    SDL_Texture *newTexture = NULL;
 
-	//Load image at specified path
-	SDL_Surface* loadedSurface = IMG_Load(filepath);
-	if(loadedSurface == NULL)
-	{
-		std::cout << "Unable to load image " << filepath << " SDL_image Error: " << IMG_GetError() << "\n";
-	}
-	else
-	{
-		//Color key image
-		SDL_SetColorKey(loadedSurface, SDL_TRUE, SDL_MapRGB(loadedSurface->format, 0, 0xFF, 0));
+    // Load image at specified path
+    SDL_Surface *loadedSurface = IMG_Load(filepath);
+    if (loadedSurface == NULL)
+    {
+        std::cout << "Unable to load image " << filepath << " SDL_image Error: " << IMG_GetError() << "\n";
+    }
+    else
+    {
+        // Color key image
+        SDL_SetColorKey(loadedSurface, SDL_TRUE, SDL_MapRGB(loadedSurface->format, 0, 0xFF, 0));
 
-		//Create texture from surface pixels
+        // Create texture from surface pixels
         newTexture = SDL_CreateTextureFromSurface(w->renderer, loadedSurface);
-		if(newTexture == NULL)
-		{
-       		std::cout << "Unable to create texture from " << filepath << " SDL Error: " << SDL_GetError() << "\n";
-		}
-		else
-		{
-			//Get image dimensions
-			this->w = loadedSurface->w;
-			this->h = loadedSurface->h;
-		}
+        if (newTexture == NULL)
+        {
+            std::cout << "Unable to create texture from " << filepath << " SDL Error: " << SDL_GetError() << "\n";
+        }
+        else
+        {
+            // Get image dimensions
+            this->w = loadedSurface->w;
+            this->h = loadedSurface->h;
+        }
 
-		//Get rid of old loaded surface
-		SDL_FreeSurface(loadedSurface);
-	}
+        // Get rid of old loaded surface
+        SDL_FreeSurface(loadedSurface);
+    }
 
-	this->tex = newTexture;
+    this->tex = newTexture;
 }
 
 void Texture::load(Window *w, const char *filePath)
 {
-    // free prev texture
-    //this->cleanup();
-
     // The final texture
     SDL_Texture *newTexture = NULL;
 
@@ -84,7 +81,7 @@ void Texture::load(Window *w, const char *filePath)
     }
 
     // create texture from suf pixels
-    newTexture = SDL_CreateTexture(w->renderer, SDL_GetWindowPixelFormat(w->window), SDL_TEXTUREACCESS_STREAMING, formattedSurface->w, formattedSurface->h);
+    newTexture = SDL_CreateTexture(w->renderer, SDL_GetWindowPixelFormat(w->window) /*SDL_PIXELFORMAT_RGBA8888*/, SDL_TEXTUREACCESS_STREAMING, formattedSurface->w, formattedSurface->h);
     if (newTexture == NULL)
     {
         std::cout << "Unable to create blank texture SDL Error: " << SDL_GetError();
@@ -101,37 +98,31 @@ void Texture::load(Window *w, const char *filePath)
     this->h = formattedSurface->h;
 
     // Get pixel data in editable format
-    Uint32* pixels = (Uint32*)this->pixels;
+    Uint32 *pixels = (Uint32 *)this->pixels;
     int pixelCount = (this->pitch / 4) * this->h;
-
     // Map colors
     Uint32 colorKey = SDL_MapRGB(formattedSurface->format, 0, 0xFF, 0xFF);
     Uint32 transparent = SDL_MapRGBA(formattedSurface->format, 0x00, 0xFF, 0xFF, 0x00);
-
-    //Color key pixels
+    // Color key pixels
     for (int i = 0; i < pixelCount; ++i)
     {
-        if( pixels[i] == colorKey )
+        if (pixels[i] == colorKey)
         {
             pixels[i] = transparent;
         }
     }
 
-    // Unlock texture to update
+    // // Unlock texture to update
     SDL_UnlockTexture(newTexture);
     this->pixels = NULL;
-    
+
     this->status = true;
     this->tex = newTexture;
+    this->pixFormat = formattedSurface->format;
 
     // clean memory
     SDL_FreeSurface(formattedSurface);
     SDL_FreeSurface(loadedSurface);
-}
-
-Uint32 getPixel32(unsigned int x, unsigned int y)
-{
-
 }
 
 void Texture::cleanup()

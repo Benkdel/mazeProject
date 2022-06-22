@@ -17,11 +17,12 @@ public:
     // Empty constructor
     Ray();
 
-    void castDDD(vec2 pos, vec2 lookAt, Map *map);
+    void castDDD(vec2 pos, float pAngle, vec2 rayDir, Map *map);
 
     HitResult results;
     vec2 rayDir;
     float distance;
+    float wallHeight;
     float angle;
 };
 

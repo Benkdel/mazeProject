@@ -3,7 +3,7 @@
 
 #include "../macros.hpp"
 #include "../sdl_engine/window.hpp"
-#include "../sdl_engine/texture.hpp"
+#include "../sdl_engine/sprite.hpp"
 #include "../io/keyboard.hpp"
 #include "../io/mouse.hpp"
 #include "../entities/player.hpp"
@@ -26,8 +26,6 @@ public:
 
     void cleanup();
 
-    inline float getP2Sdistance() { return this->playerToScreenDistance; }
-
     int mNumRays;
 
 private:
@@ -39,13 +37,11 @@ private:
     Texture *wall;
     Texture *gun1;
     Texture *floor1;
-
-    float playerToScreenDistance;
+    Texture *texTarget;
 
     Map *map;
     Player player;
 
-    SDL_Rect VPfiller;
     SDL_Rect VPminimap;
     SDL_Rect VPworld;
 

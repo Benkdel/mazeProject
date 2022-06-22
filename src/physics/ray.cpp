@@ -4,10 +4,9 @@
 
 Ray::Ray() {}
 
-void Ray::castDDD(vec2 pos, vec2 lookAt, Map *map)
+void Ray::castDDD(vec2 pos, float pAngle, vec2 rayDir, Map *map)
 {
     vec2 rayStart = pos;
-    vec2 rayDir = lookAt;
 
     // compute scaling factors of c when moving 1 unit in y, and same for 1 unit in x
     vec2 scalingFactors;
@@ -75,4 +74,13 @@ void Ray::castDDD(vec2 pos, vec2 lookAt, Map *map)
         this->distance = totalDistance;
         this->results.hit = true;
     }
+    
+    // fix fish eye
+    float aDist = clampAngle(this->angle - pAngle);
+    float modDistance = totalDistance * cosf(deg2rad(aDist));
+
+    // compute wall height
+    this->wallHeight = ((float)map->getCellSize() * map->getPlayerDistToScr()) / modDistance;
+    
+
 }

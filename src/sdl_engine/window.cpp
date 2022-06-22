@@ -37,7 +37,7 @@ void Window::initWindow()
     }
 
     // Create renderer for window
-    this->renderer = SDL_CreateRenderer(this->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    this->renderer = SDL_CreateRenderer(this->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
     if (this->renderer == NULL)
     {
         std::cout << "Renderer could not be created! SDL Error: " <<  SDL_GetError() << "\n";

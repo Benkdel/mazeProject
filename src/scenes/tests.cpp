@@ -1,7 +1,5 @@
 #include "tests.hpp"
 
-#include "../sdl_engine/texture.hpp"
-
 #include <cmath>
 
 Texture *tex;

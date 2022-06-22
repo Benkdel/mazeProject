@@ -35,7 +35,7 @@ int main(int argc, char **argv)
 // =====================================================
 
     Map map;
-    bool mapLoaded = map.loadMap("../assets/Maps/largemap1");
+    bool mapLoaded = map.loadMap("../assets/Maps/mediummap1");
     if (!mapLoaded)
     {
         return -1;

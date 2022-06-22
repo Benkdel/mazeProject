@@ -34,6 +34,7 @@ public:
     inline int getCellSize() { return mCellSize; }
     inline int getPlayerSize() { return mPlayerSize; }
     inline int getMinMapSize() { return mMinMapSize; }
+    inline int getPlayerDistToScr() { return mPlayerDistToScreen; }
 
 private:
     unsigned int mWidth;
@@ -43,6 +44,7 @@ private:
     vec2 mInitPlayerPos;
     int mPlayerSize;
     float mMaxRayLength;
+    float mPlayerDistToScreen;
 };
 
 #endif

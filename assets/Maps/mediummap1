@@ -4,7 +4,7 @@
 # - C => line contains cell size (square)
 # - S => line contains player size (scaling)
 # - N => line contains minimap size in cells
-# - 
+# - T => line contains texture path
 
 
 C 64
@@ -16,8 +16,6 @@ S 10
 N 1
 
 M 1111111111
-M 1000000001
-M 1000000001
 M 1000000001
 M 1000000001
 M 1000000001

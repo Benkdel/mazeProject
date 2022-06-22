@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+#define FLOOR_HORIZONTAL 0
+
 /**
  * draw triangle
  */
@@ -26,20 +28,20 @@ MainGame::MainGame(Window *window, Map *map, Mouse *mouse, Keyboard *keyboard)
 
     mNumRays = map->getWidth() * map->getCellSize();
 
-    // pre-compute distance from player to projection plane (or screen)
-    this->playerToScreenDistance = this->window->getWidth() / (atan(FOV/2));
-
-    // Load background texture
+    // load background
     this->background = new Texture(this->window, "../assets/Images/space_1.png", 1);
 
     // Load gun1
-    this->gun1 = new Texture(this->window, "../assets/weapons/shotgun1.png", 1);
+    // this->gun1 = new Texture(this->window, "../assets/weapons/mp4.png", 1);
 
     // Load wall
     this->wall = new Texture(this->window, "../assets/Walls/RedBricks.png", 1);
 
     // load floors
-    this->floor1 = new Texture(this->window, "../assets/Floors/floor.png", 1);
+    this->floor1 = new Texture(this->window, "../assets/Floors/checkboard.png", 0);
+
+    // set up render target
+    this->texTarget = new Texture(this->window, "../assets/Floors/blank.png", 0);
 }
 
 void MainGame::renderMinimap(float dt)
@@ -108,15 +110,10 @@ void MainGame::renderWorld(float dt)
     // render world:
     SDL_RenderSetViewport(this->window->renderer, &this->VPworld);
 
-    // render background
-    this->background->render(this->window, 0, 0);
-
-    // on top of that load floor textures
-    SDL_SetRenderDrawColor(this->window->renderer, 220, 209, 136, 255);
-    SDL_Rect floor = {0, this->VPworld.h / 2, this->VPworld.w, this->VPworld.h / 2};
-    SDL_RenderFillRect(this->window->renderer, &floor);
-        
     SDL_Rect texturePart;
+
+    // render background
+    this->background->render(this->window, 0, 0, this->window->getWidth(), this->window->getHeight() / 2, NULL);
 
     /* pre-computed values to render floors*/
     float fFar = 0.3f;
@@ -124,12 +121,115 @@ void MainGame::renderWorld(float dt)
     float fWorldA = 0.0f;
     float halfFoV = CONST_PI / 4.0f;
 
-    float scrheigth = this->VPworld.h;
+    float scrHeigth = this->VPworld.h;
     float scrWidht = this->VPworld.w;
-    float halfScreen = (int)scrheigth >> 1;
+    int halfScreen = (int)scrHeigth >> 1;
     int floorTexWidth = this->floor1->getWidth();
     int floorTexHeight = this->floor1->getHeight();
+    float convRatioW = 1.0f / scrWidht;
 
+    /*
+    =====================================================
+    render floors to to texture and then render to screen
+    =====================================================
+    */
+
+    // create sprite from floor texture
+    Sprite floorSprite(this->floor1);
+    // tmp var
+    bool slowButPerfect = false;
+
+    int texWidth = this->texTarget->getWidth(); // should be pitch / 4
+    int texHeight = this->texTarget->getHeight();
+
+    this->texTarget->lockTexture();
+    Uint32 *floorPixels = (Uint32 *)texTarget->getPixels();
+
+#if FLOOR_HORIZONTAL
+
+    float fAngle = clampAngle(this->player.angle - (FOV / 2));
+    float lAngle = clampAngle(this->player.angle + (FOV / 2));
+    vec2 rayDir0 = getVecFromAngle(1.0f, fAngle);
+    vec2 rayDir1 = getVecFromAngle(1.0f, lAngle);
+
+    for (int y = 0 /*halfScreen*/ + 1; y < halfScreen /*scrHeigth*/; ++y)
+    {
+        int p = y /*y - halfScreen*/;
+        float posZ = 0.2f * scrHeigth;
+        float rowDistance = posZ / p;
+
+        float floorStepX = rowDistance * (rayDir1.x - rayDir0.x) * convRatioW;
+        float floorStepY = rowDistance * (rayDir1.y - rayDir0.y) * convRatioW;
+
+        float floorX = this->player.pos.x + rowDistance * rayDir0.x;
+        float floorY = this->player.pos.y + rowDistance * rayDir0.y;
+
+        for (int x = 0; x < scrWidht; ++x)
+        {
+            int cellX = (int)(floorX);
+            int cellY = (int)(floorY);
+
+            int tx = (int)(floorTexWidth * (floorX - cellX)) & (floorTexWidth - 1);
+            int ty = (int)(floorTexHeight * (floorY - cellY)) & (floorTexHeight - 1);
+
+            floorX += floorStepX;
+            floorY += floorStepY;
+
+            if (slowButPerfect)
+            {
+                texturePart = {tx, ty, 1, 1};
+                this->floor1->render(this->window, x, y + halfScreen, 0, 0, &texturePart);
+            }
+            else
+            {
+                Uint32 sampleColor = SDL_MapRGB(texTarget->getPixFormat(), floorSprite.GetRGBColor(tx, ty).r, floorSprite.GetRGBColor(tx, ty).g, floorSprite.GetRGBColor(tx, ty).b);
+                floorPixels[y * texWidth + x] = sampleColor;
+            }
+        }
+    }
+    texTarget->unlockTexture();
+    if (!slowButPerfect)
+    {
+        this->texTarget->render(this->window, 0, halfScreen);
+    }
+#endif // FLOOR_HORIZONTAL
+
+#if !FLOOR_HORIZONTAL
+    for (int x = 0; x < scrWidht; x++)
+    {
+        float wallHeight = player.rays[x].wallHeight;
+
+        for (int y = 1; y < halfScreen; ++y)
+        {
+            float dy = y;
+            float deg = deg2rad(this->player.rays[x].angle);
+            float raFix = cosf(deg2rad(this->player.rays[x].angle - this->player.angle));
+            float tx = this->player.pos.x / 2 + cosf(deg) * map->getPlayerDistToScr() * floorTexWidth / dy / raFix;
+            float ty = this->player.pos.y / 2 - sinf(deg) * map->getPlayerDistToScr() * floorTexHeight / dy / raFix;
+            tx = (int)(tx)&(floorTexWidth - 1);
+            ty = (int)(ty)&(floorTexHeight - 1);
+
+            if (slowButPerfect)
+            {
+                texturePart = {(int)tx, (int)ty, (int)floorTexWidth, (int)floorTexHeight};
+                this->floor1->render(this->window, x, y + halfScreen, 0, 0, &texturePart);
+            }
+            else
+            {
+                Uint32 sampleColor = SDL_MapRGB(texTarget->getPixFormat(), floorSprite.GetRGBColor(tx, ty).r, floorSprite.GetRGBColor(tx, ty).g, floorSprite.GetRGBColor(tx, ty).b);
+                floorPixels[y * texWidth + x] = sampleColor;
+            }
+        }
+    }
+
+    texTarget->unlockTexture();
+    if (!slowButPerfect)
+    {
+        this->texTarget->render(this->window, 0, halfScreen);
+    }
+
+#endif // !FLOOR_HORIZONTAL
+    
     /*
     ====================================
     render walls based on rays length
@@ -144,24 +244,19 @@ void MainGame::renderWorld(float dt)
     {
         if (this->player.rays[x].results.hit)
         {
-            // fix fish eye
-            float aDist = clampAngle(this->player.rays[x].angle - this->player.angle);
-            float modDistance = this->player.rays[x].distance * cosf(deg2rad(aDist));
-
-            // compute wall height
-            float wallHeight = ((float)map->getCellSize() * this->playerToScreenDistance) / modDistance;
-
             // get offset for rendering texture
             int cellX = this->player.rays[x].results.intersection.x;
             int cellY = this->player.rays[x].results.intersection.y;
             SDL_Rect cell = this->map->getCell(vec2(cellX, cellY)).rect;
             float offset;
 
+            float wallHeight = this->player.rays[x].wallHeight;
+
             if (this->player.rays[x].results.HitDir == 0) // horizontal hit
                 offset = this->player.rays[x].results.intersection.y - cell.y;
             else // vertical hit
                 offset = this->player.rays[x].results.intersection.x - cell.x;
-            
+
             offset /= map->getCellSize();
             offset *= this->wall->getWidth();
 
@@ -169,23 +264,23 @@ void MainGame::renderWorld(float dt)
             wall.y = halfScreen - wallHeight / 2;
             wall.w = wallWidth;
             wall.h = wallHeight;
-            texturePart = { (int)offset, 0, (int)wallWidth, (int)this->wall->getWidth() };
+            texturePart = {(int)offset, 0, (int)wallWidth, (int)this->wall->getHeight()};
             this->wall->render(this->window, wall.x, wall.y, wallWidth, wall.h, &texturePart);
         }
     }
 
     // render gun
-    this->gun1->render(this->window, this->window->getWidth() - this->gun1->getWidth(), this->window->getHeight() - this->gun1->getHeight());
+    // this->gun1->render(this->window, this->window->getWidth() - this->gun1->getWidth(), this->window->getHeight() - this->gun1->getHeight());
 
     // render croshair
     SDL_SetRenderDrawColor(this->window->renderer, 150, 255, 51, 255);
-    vec2 P1 = vec2(this->window->getWidth()/2 - 5.0f, this->window->getHeight()/2);
-    vec2 P2 = vec2(this->window->getWidth()/2 + 5.0f, this->window->getHeight()/2);
+    vec2 P1 = vec2(this->window->getWidth() / 2 - 5.0f, this->window->getHeight() / 2);
+    vec2 P2 = vec2(this->window->getWidth() / 2 + 5.0f, this->window->getHeight() / 2);
     SDL_RenderDrawLineF(this->window->renderer, P1.x, P1.y, P2.x, P2.y);
-    P1 = vec2(this->window->getWidth()/2, this->window->getHeight()/2 + 5.0f);
-    P2 = vec2(this->window->getWidth()/2, this->window->getHeight()/2 - 5.0f);
+    P1 = vec2(this->window->getWidth() / 2, this->window->getHeight() / 2 + 5.0f);
+    P2 = vec2(this->window->getWidth() / 2, this->window->getHeight() / 2 - 5.0f);
     SDL_RenderDrawLineF(this->window->renderer, P1.x, P1.y, P2.x, P2.y);
-    
+
     if (this->keyboard->printData)
     {
         this->debugging();

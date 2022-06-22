@@ -111,6 +111,8 @@ bool Map::loadMap(const char *filePath)
     mInitPlayerPos.x *= mCellSize;
     mInitPlayerPos.y *= mCellSize;
 
+    mPlayerDistToScreen = (mWidth * mCellSize) / (atan(FOV / 2));
+
     /*
     =========================
     Populate CELLs array
