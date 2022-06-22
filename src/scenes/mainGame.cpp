@@ -2,8 +2,6 @@
 
 #include <cmath>
 
-#define FLOOR_HORIZONTAL 0
-
 /**
  * draw triangle
  */
@@ -35,10 +33,10 @@ MainGame::MainGame(Window *window, Map *map, Mouse *mouse, Keyboard *keyboard)
     // this->gun1 = new Texture(this->window, "../assets/weapons/mp4.png", 1);
 
     // Load wall
-    this->wall = new Texture(this->window, "../assets/Walls/RedBricks.png", 1);
+    this->wall = new Texture(this->window, "../assets/Walls/scify_walls_1.png", 1);
 
     // load floors
-    this->floor1 = new Texture(this->window, "../assets/Floors/checkboard.png", 0);
+    this->floor1 = new Texture(this->window, "../assets/Floors/scify_floor_2.png", 0);
 
     // set up render target
     this->texTarget = new Texture(this->window, "../assets/Floors/blank.png", 0);
@@ -115,18 +113,11 @@ void MainGame::renderWorld(float dt)
     // render background
     this->background->render(this->window, 0, 0, this->window->getWidth(), this->window->getHeight() / 2, NULL);
 
-    /* pre-computed values to render floors*/
-    float fFar = 0.3f;
-    float fNear = 0.03f;
-    float fWorldA = 0.0f;
-    float halfFoV = CONST_PI / 4.0f;
-
     float scrHeigth = this->VPworld.h;
     float scrWidht = this->VPworld.w;
     int halfScreen = (int)scrHeigth >> 1;
     int floorTexWidth = this->floor1->getWidth();
     int floorTexHeight = this->floor1->getHeight();
-    float convRatioW = 1.0f / scrWidht;
 
     /*
     =====================================================
@@ -136,99 +127,31 @@ void MainGame::renderWorld(float dt)
 
     // create sprite from floor texture
     Sprite floorSprite(this->floor1);
-    // tmp var
-    bool slowButPerfect = false;
-
     int texWidth = this->texTarget->getWidth(); // should be pitch / 4
     int texHeight = this->texTarget->getHeight();
-
     this->texTarget->lockTexture();
     Uint32 *floorPixels = (Uint32 *)texTarget->getPixels();
+    float pDistToScreen = map->getPlayerDistToScr();
 
-#if FLOOR_HORIZONTAL
-
-    float fAngle = clampAngle(this->player.angle - (FOV / 2));
-    float lAngle = clampAngle(this->player.angle + (FOV / 2));
-    vec2 rayDir0 = getVecFromAngle(1.0f, fAngle);
-    vec2 rayDir1 = getVecFromAngle(1.0f, lAngle);
-
-    for (int y = 0 /*halfScreen*/ + 1; y < halfScreen /*scrHeigth*/; ++y)
-    {
-        int p = y /*y - halfScreen*/;
-        float posZ = 0.2f * scrHeigth;
-        float rowDistance = posZ / p;
-
-        float floorStepX = rowDistance * (rayDir1.x - rayDir0.x) * convRatioW;
-        float floorStepY = rowDistance * (rayDir1.y - rayDir0.y) * convRatioW;
-
-        float floorX = this->player.pos.x + rowDistance * rayDir0.x;
-        float floorY = this->player.pos.y + rowDistance * rayDir0.y;
-
-        for (int x = 0; x < scrWidht; ++x)
-        {
-            int cellX = (int)(floorX);
-            int cellY = (int)(floorY);
-
-            int tx = (int)(floorTexWidth * (floorX - cellX)) & (floorTexWidth - 1);
-            int ty = (int)(floorTexHeight * (floorY - cellY)) & (floorTexHeight - 1);
-
-            floorX += floorStepX;
-            floorY += floorStepY;
-
-            if (slowButPerfect)
-            {
-                texturePart = {tx, ty, 1, 1};
-                this->floor1->render(this->window, x, y + halfScreen, 0, 0, &texturePart);
-            }
-            else
-            {
-                Uint32 sampleColor = SDL_MapRGB(texTarget->getPixFormat(), floorSprite.GetRGBColor(tx, ty).r, floorSprite.GetRGBColor(tx, ty).g, floorSprite.GetRGBColor(tx, ty).b);
-                floorPixels[y * texWidth + x] = sampleColor;
-            }
-        }
-    }
-    texTarget->unlockTexture();
-    if (!slowButPerfect)
-    {
-        this->texTarget->render(this->window, 0, halfScreen);
-    }
-#endif // FLOOR_HORIZONTAL
-
-#if !FLOOR_HORIZONTAL
     for (int x = 0; x < scrWidht; x++)
     {
-        float wallHeight = player.rays[x].wallHeight;
-
+        float deg = deg2rad(this->player.rays[x].angle);
+        float raFix = cosf(deg2rad(this->player.rays[x].angle - this->player.angle));
         for (int y = 1; y < halfScreen; ++y)
         {
             float dy = y;
-            float deg = deg2rad(this->player.rays[x].angle);
-            float raFix = cosf(deg2rad(this->player.rays[x].angle - this->player.angle));
-            float tx = this->player.pos.x / 2 + cosf(deg) * map->getPlayerDistToScr() * floorTexWidth / dy / raFix;
-            float ty = this->player.pos.y / 2 - sinf(deg) * map->getPlayerDistToScr() * floorTexHeight / dy / raFix;
+            float tx = this->player.pos.x * 0.5 + cosf(deg) * pDistToScreen * floorTexWidth / dy / raFix;
+            float ty = this->player.pos.y * 0.5 - sinf(deg) * pDistToScreen * floorTexHeight / dy / raFix;
             tx = (int)(tx)&(floorTexWidth - 1);
             ty = (int)(ty)&(floorTexHeight - 1);
 
-            if (slowButPerfect)
-            {
-                texturePart = {(int)tx, (int)ty, (int)floorTexWidth, (int)floorTexHeight};
-                this->floor1->render(this->window, x, y + halfScreen, 0, 0, &texturePart);
-            }
-            else
-            {
-                Uint32 sampleColor = SDL_MapRGB(texTarget->getPixFormat(), floorSprite.GetRGBColor(tx, ty).r, floorSprite.GetRGBColor(tx, ty).g, floorSprite.GetRGBColor(tx, ty).b);
-                floorPixels[y * texWidth + x] = sampleColor;
-            }
+            Uint32 sampleColor = SDL_MapRGB(texTarget->getPixFormat(), floorSprite.GetRGBColor(tx, ty).r, floorSprite.GetRGBColor(tx, ty).g, floorSprite.GetRGBColor(tx, ty).b);
+            floorPixels[y * texWidth + x] = sampleColor;
         }
     }
 
     texTarget->unlockTexture();
-    if (!slowButPerfect)
-    {
-        this->texTarget->render(this->window, 0, halfScreen);
-    }
-
-#endif // !FLOOR_HORIZONTAL
+    this->texTarget->render(this->window, 0, halfScreen);
     
     /*
     ====================================
@@ -249,9 +172,14 @@ void MainGame::renderWorld(float dt)
             int cellY = this->player.rays[x].results.intersection.y;
             SDL_Rect cell = this->map->getCell(vec2(cellX, cellY)).rect;
             float offset;
+    
+            // fix fish eye
+            float aDist = clampAngle(player.rays[x].angle - player.angle);
+            float modDistance = player.rays[x].distance * cosf(deg2rad(aDist));
 
-            float wallHeight = this->player.rays[x].wallHeight;
-
+            // compute wall height
+            float wallHeight = ((float)map->getCellSize() * map->getPlayerDistToScr()) / modDistance;
+        
             if (this->player.rays[x].results.HitDir == 0) // horizontal hit
                 offset = this->player.rays[x].results.intersection.y - cell.y;
             else // vertical hit

@@ -99,7 +99,7 @@ void Player::rayCastDDD(Map *map)
 {
     for (int i = 0; i < map->getWidth() * map->getCellSize(); i++)
     {
-        this->rays[i].castDDD(this->pos, this->angle, this->rays[i].rayDir, map);
+        this->rays[i].castDDD(this->pos, this->rays[i].rayDir, map);
     }
 }
 

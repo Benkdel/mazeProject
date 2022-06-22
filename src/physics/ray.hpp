@@ -17,7 +17,7 @@ public:
     // Empty constructor
     Ray();
 
-    void castDDD(vec2 pos, float pAngle, vec2 rayDir, Map *map);
+    void castDDD(vec2 pos, vec2 rayDir, Map *map);
 
     HitResult results;
     vec2 rayDir;
