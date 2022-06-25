@@ -115,7 +115,7 @@ void MainGame::renderWorld(float dt)
     */
 
     // create target texture
-    Texture texTarget = Texture(this->window, "assets/Images/space_1.png", 0);
+    Texture texTarget = Texture(this->window, "assets/BufferTextures/space960x640.png", 0);
 
     int texWidth = texTarget.getWidth(); // should be pitch / 4
     int texHeight = texTarget.getHeight();
@@ -168,6 +168,7 @@ void MainGame::renderWorld(float dt)
             
             float ty = offY * yStep;
             
+            // SAMPLE FROM WALL TEXTURES
             for (int y = wallOffset; y < wallOffset + wallHeight; y++)
             {
                 Uint32 sampleColor = SDL_MapRGB(texTarget.getPixFormat(), wallSprite.GetRGBColor(tx, ty).r, wallSprite.GetRGBColor(tx, ty).g, wallSprite.GetRGBColor(tx, ty).b);
@@ -175,14 +176,16 @@ void MainGame::renderWorld(float dt)
                 ty += yStep;
             }
 
-            // FLOORS
+            // SAMPLE FROM FLOOR TEXTURE
             float deg = deg2rad(this->player.rays[x].angle);
             float raFix = cosf(deg2rad(clampAngle(this->player.rays[x].angle - this->player.angle)));
             for (int y = wallOffset + wallHeight; y < scrHeigth; y++)
             {
+                // i dont know why this numbers: 158 * 2 * 32 work with 128 by 128 textures, 
+                // ill leave this for now and come back to find out
                 float dy = y - (halfScreen);    
-                tx = this->player.pos.x / 2 + cosf(deg) * pDistToScreen * floorSprite.nWidth / dy / raFix;
-                ty = this->player.pos.y / 2 - sinf(deg) * pDistToScreen * floorSprite.nHeight / dy / raFix;
+                tx = this->player.pos.x + cosf(deg) * 158 * 2 * 32/** floorSprite.nWidth*/ / dy / raFix;
+                ty = this->player.pos.y - sinf(deg) * 158 * 2 * 32/** floorSprite.nHeight*/ / dy / raFix;
                 tx = (int)(tx) & (floorSprite.nWidth - 1);
                 ty = (int)(ty) & (floorSprite.nHeight - 1);
 
