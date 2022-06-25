@@ -1,0 +1,25 @@
+# - # => line are comments and will not be considered
+# - M => line contains MAP INFO [0 means empty space, 1 to 5 means wall with diff textures, 6 means door]
+# - P => line contains player position in cells [x y]
+# - C => line contains cell size (square)
+# - S => line contains player size (scaling)
+# - N => line contains minimap size in cells
+# - T => line contains texture path
+
+
+C 64
+
+P 1 2
+
+S 10
+
+N 1
+
+M 1111111111
+M 1000000001
+M 1000000001
+M 1000000001
+M 1000000001
+M 1000000001
+M 1000000001
+M 1111111111
