@@ -148,12 +148,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\entities\player.cpp" />
+    <ClCompile Include="src\io\camera.cpp" />
     <ClCompile Include="src\io\keyboard.cpp" />
     <ClCompile Include="src\io\mouse.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\math\myMathLib.cpp" />
+    <ClCompile Include="src\math\mathlib.cpp" />
     <ClCompile Include="src\physics\collision.cpp" />
-    <ClCompile Include="src\physics\ray.cpp" />
+    <ClCompile Include="src\math\ray.cpp" />
     <ClCompile Include="src\scenes\mainGame.cpp" />
     <ClCompile Include="src\scenes\tests.cpp" />
     <ClCompile Include="src\sdl_engine\texture.cpp" />
@@ -162,12 +163,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\entities\player.hpp" />
+    <ClInclude Include="src\io\camera.hpp" />
     <ClInclude Include="src\io\keyboard.hpp" />
     <ClInclude Include="src\io\mouse.hpp" />
     <ClInclude Include="src\macros.hpp" />
-    <ClInclude Include="src\math\myMathLib.hpp" />
+    <ClInclude Include="src\math\mathlib.hpp" />
     <ClInclude Include="src\physics\collision.hpp" />
-    <ClInclude Include="src\physics\ray.hpp" />
+    <ClInclude Include="src\math\ray.hpp" />
     <ClInclude Include="src\scenes\mainGame.hpp" />
     <ClInclude Include="src\scenes\tests.hpp" />
     <ClInclude Include="src\sdl_engine\sprite.hpp" />
@@ -177,6 +179,7 @@
     <ClInclude Include="src\worlds\map.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="assets\mapGen\map.xlsm" />
     <None Include="assets\Maps\largemap1" />
     <None Include="assets\Maps\mediummap1" />
     <None Include="assets\Maps\smallmap1" />

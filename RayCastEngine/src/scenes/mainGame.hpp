@@ -47,6 +47,8 @@ private:
 
     SDL_Rect tempSquare;
 
+    std::vector<vec2> mHitCoords;
+
 };
 
 

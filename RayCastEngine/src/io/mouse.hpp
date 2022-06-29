@@ -2,7 +2,7 @@
 #define MOUSE_HPP
 
 #include <SDL.h>
-#include "../math/myMathLib.hpp"
+#include "../math/mathlib.hpp"
 
 class Mouse {
 public:

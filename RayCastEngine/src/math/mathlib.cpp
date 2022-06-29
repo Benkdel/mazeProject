@@ -1,4 +1,4 @@
-#include "myMathLib.hpp"
+#include "mathlib.hpp"
 
 #include <cmath>
 

@@ -17,13 +17,13 @@ vec2 map_collision(vec2 pos, vec2 newPos, vec2 velocity, Map *map)
     // going to the left
     if (velocity.x <= 0)
     {
-        if (map->getCell(vec2(newPos.x, pos.y)).value == '#' || map->getCell(vec2(newPos.x, pos.y + 0.99f)).value == '#')
+        if (map->getCell(vec2(newPos.x, pos.y)).value != 0 || map->getCell(vec2(newPos.x, pos.y + 0.99f)).value != 0)
             dist.x = (int)pos.x + 1;
     }
     // going to the right
     else
     {
-        if (map->getCell(vec2(newPos.x + 1.0f, pos.y)).value == '#' || map->getCell(vec2(newPos.x + 1.0f, pos.y + 0.99f)).value == '#')
+        if (map->getCell(vec2(newPos.x + 1.0f, pos.y)).value != 0 || map->getCell(vec2(newPos.x + 1.0f, pos.y + 0.99f)).value != 0)
             dist.x = (int)pos.x;
     }
         
@@ -36,13 +36,13 @@ vec2 map_collision(vec2 pos, vec2 newPos, vec2 velocity, Map *map)
     // going Up
     if (velocity.y <= 0)
     {
-        if (map->getCell(vec2(newPos.x, newPos.y)).value == '#' || map->getCell(vec2(newPos.x + 1.0f, newPos.y)).value == '#')
+        if (map->getCell(vec2(newPos.x, newPos.y)).value != 0 || map->getCell(vec2(newPos.x + 1.0f, newPos.y)).value != 0)
             dist.y = (int)pos.y + 1;
     }
     // going down
     else
     {
-        if (map->getCell(vec2(newPos.x, newPos.y + 1.0f)).value == '#' || map->getCell(vec2(newPos.x + 1.0f, newPos.y + 1.0f)).value == '#')
+        if (map->getCell(vec2(newPos.x, newPos.y + 1.0f)).value != 0 || map->getCell(vec2(newPos.x + 1.0f, newPos.y + 1.0f)).value != 0)
             dist.y = (int)pos.y;
     }
 

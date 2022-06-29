@@ -4,8 +4,8 @@
 #include <SDL.h>
 #include "../sdl_engine/window.hpp"
 #include "../worlds/map.hpp"
-#include "../math/myMathLib.hpp"
-#include "../physics/ray.hpp"
+#include "../math/mathlib.hpp"
+#include "../math/ray.hpp"
 #include "../io/keyboard.hpp"
 #include "../io/mouse.hpp"
 
@@ -20,17 +20,10 @@ public:
     void updatePos(Keyboard *kb, float dt, Map *map);
     void updateCurrentAngle(Mouse *m, float dt);
     void translate(int size, int numRays);
-    void rayCastDDD(Map *map);
-    void clearRays();
-
-    std::vector<Ray> rays;
-
+   
     vec2 pos;
     vec2 lookAt;
-    
-    // if we want to draw player as circle
-    float radius;
-    
+        
     // as triangle:
     Triangle triangle;
     Triangle transfTriangle;

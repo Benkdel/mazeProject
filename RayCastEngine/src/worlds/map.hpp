@@ -6,7 +6,16 @@
 
 #include "../macros.hpp"
 #include "../sdl_engine/window.hpp"
-#include "../math/myMathLib.hpp"
+#include "../math/mathlib.hpp"
+
+enum class CellType {
+    EMPTY = 0,
+    TEXT_WALL_1,
+    TEXT_WALL_2,
+    TEXT_WALL_3,
+    TEXT_WALL_4,
+    DOOR
+};
 
 class Cell {
 public:

@@ -2,7 +2,7 @@
 #define TESTS_HPP
 
 #include "../sdl_engine/window.hpp"
-#include "../math/myMathLib.hpp"
+#include "../math/mathlib.hpp"
 #include "../worlds/map.hpp"
 #include "../io/keyboard.hpp"
 #include "../io/mouse.hpp"

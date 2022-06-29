@@ -1,7 +1,7 @@
 #ifndef SPRITE_HPP
 #define SPRITE_HPP
 
-#include "../math/myMathLib.hpp"
+#include "../math/mathlib.hpp"
 #include <SDL.h>
 #include "texture.hpp"
 

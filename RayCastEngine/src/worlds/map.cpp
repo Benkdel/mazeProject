@@ -34,7 +34,7 @@ void Map::renderMiniMap(Window *w, SDL_Rect *VPminimap, SDL_Rect *VPworld)
             worldCell.w = cellWidth;
             worldCell.h = cellHeight;
 
-            if (mMapCells[r * mWidth + c].value == '#')
+            if (mMapCells[r * mWidth + c].value != 0)
             {
                 SDL_SetRenderDrawColor(w->renderer, 0, 204, 204, 255);
                 SDL_RenderFillRect(w->renderer, &worldCell);
@@ -67,6 +67,8 @@ bool Map::loadMap(const char *filePath)
     std::string line;
     std::string::iterator c;
     bool witdhSaved = false;
+    std::string pPos = "";
+    int idx = 0;
     while (std::getline(inputFile, line))
     {
         char id = line[0];
@@ -88,8 +90,16 @@ bool Map::loadMap(const char *filePath)
             mCellSize = stoi((line.substr(2, line.size() - 2)));
             break;
         case 'P':
-            mInitPlayerPos.x = (int)line[2] - 48;
-            mInitPlayerPos.y = (int)line[4] - 48;
+            for (c = line.begin() + 2; c < line.end(); c++)
+            {
+                if (*c == ' ')
+                {
+                    mInitPlayerPos.x = stoi(pPos);
+                    pPos = "";
+                }
+                pPos += *c;
+            }
+            mInitPlayerPos.y = stoi(pPos);
             break;
         case 'S':
             mPlayerSize = stoi((line.substr(2, line.size() - 2)));
@@ -118,7 +128,7 @@ bool Map::loadMap(const char *filePath)
     Populate CELLs array
     =========================
     */
-   mMapCells.clear();
+    mMapCells.clear();
     for (int r = 0; r < mHeight; r++)
     {
         for (int c = 0; c < mWidth; c++)
@@ -128,11 +138,7 @@ bool Map::loadMap(const char *filePath)
 
             mMapCells.push_back(Cell());
             mMapCells[r * mWidth + c].rect = {x1, y1, mCellSize, mCellSize};
-
-            if (map[r * mWidth + c] == 1)
-                mMapCells[r * mWidth + c].value = '#';
-            else
-                mMapCells[r * mWidth + c].value = ' ';
+            mMapCells[r * mWidth + c].value = map[r * mWidth + c];
         }
     }
     return true;

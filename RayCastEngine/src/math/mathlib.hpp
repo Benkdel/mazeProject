@@ -1,5 +1,5 @@
-#ifndef MYMATHLIB_HPP
-#define MYMATHLIB_HPP
+#ifndef MATHLIB_HPP
+#define MATHLIB_HPP
 
 #include "../macros.hpp"
 

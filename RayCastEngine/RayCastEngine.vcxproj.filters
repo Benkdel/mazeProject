@@ -27,13 +27,13 @@
     <ClCompile Include="src\io\mouse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\math\myMathLib.cpp">
+    <ClCompile Include="src\math\mathlib.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\physics\collision.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\physics\ray.cpp">
+    <ClCompile Include="src\math\ray.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\scenes\mainGame.cpp">
@@ -51,6 +51,9 @@
     <ClCompile Include="src\worlds\map.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\io\camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\entities\player.hpp">
@@ -62,13 +65,13 @@
     <ClInclude Include="src\io\mouse.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\math\myMathLib.hpp">
+    <ClInclude Include="src\math\mathlib.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\physics\collision.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\physics\ray.hpp">
+    <ClInclude Include="src\math\ray.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\scenes\mainGame.hpp">
@@ -95,11 +98,15 @@
     <ClInclude Include="src\macros.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\io\camera.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\Maps\largemap1" />
     <None Include="assets\Maps\mediummap1" />
     <None Include="assets\Maps\smallmap1" />
+    <None Include="assets\mapGen\map.xlsm" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\Images\flash_light.png">

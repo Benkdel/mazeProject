@@ -26,14 +26,137 @@ MainGame::MainGame(Window *window, Map *map, Mouse *mouse, Keyboard *keyboard)
 
     mNumRays = map->getWidth() * map->getCellSize();
 
-    // Load gun1
-    // this->gun1 = new Texture(this->window, "assets/weapons/mp4.png", 1);
-
     // create wall sprite
     this->wallSprite = Sprite(new Texture(this->window, "assets/Walls/scify_walls_1.png", 0));
 
     // create floor sprite
     this->floorSprite = Sprite(new Texture(this->window, "assets/Floors/scify_floor_3.png", 0));
+}
+
+void MainGame::renderWorld(float dt)
+{
+
+    /*
+    ====================================
+    Player stuff
+    ====================================
+    */
+
+    // player updates and translations
+    this->player.updatePos(this->keyboard, dt, this->map);
+    this->player.updateCurrentAngle(this->mouse, dt);
+    this->player.translate(map->getPlayerSize(), mNumRays);
+
+    // render world:
+    SDL_RenderSetViewport(this->window->renderer, &this->VPworld);
+
+    SDL_Rect texturePart;
+
+    float scrHeigth = this->VPworld.h;
+    float scrWidht = this->VPworld.w;
+    int halfScreen = (int)scrHeigth >> 1;
+
+    /*
+    =====================================================
+    render Walls, Floors and Ceilings to texture buffer
+    =====================================================
+    */
+
+    // create target texture
+    Texture texTarget = Texture(this->window, "assets/BufferTextures/space960x800.png", 0);
+
+    // lock texture to access pixel data
+    texTarget.lockTexture();
+    Uint32 *buffer = (Uint32 *)texTarget.getPixels();
+    float pDistToScreen = map->getPlayerDistToScr();
+
+    /*
+    ====================================
+    render walls based on rays length
+    ====================================
+    */
+
+    float aCurrent = clampAngle(this->player.angle - (FOV / 2)); // Angle, FOV and similar should be in camera
+    float aDelta = FOV / (float)mNumRays; // calculate delta angle for each column
+    mHitCoords.clear();
+
+    for (int x = 0; x < mNumRays; x++)
+    {
+        HitResult ray = Ray::castDDD(this->player.pos, getVecFromAngle(1.0f, aCurrent), this->map);
+        mHitCoords.push_back(ray.hitCoords);
+        
+        if (ray.hit)
+        {
+            int cellX = ray.hitCoords.x;
+            int cellY = ray.hitCoords.y;
+            SDL_Rect cell = this->map->getCell(vec2(cellX, cellY)).rect;
+            
+            float tx = (ray.axisHit == Axis::HORIZONTAL) ? ray.hitCoords.y - cell.y : tx = ray.hitCoords.x - cell.x;
+            tx = tx / map->getCellSize() * this->wallSprite.nWidth;
+
+            // fix fish eye
+            float aDist = clampAngle(aCurrent - player.angle);
+            float modDistance = ray.distance * cosf(deg2rad(aDist));
+
+            float wallHeight = ((float)map->getCellSize() * map->getPlayerDistToScr()) / modDistance;
+            float yStep = this->wallSprite.nHeight / wallHeight;
+            float offY = 0;
+            if (wallHeight >= scrHeigth)
+            {
+                offY = (wallHeight - scrHeigth) / 2;
+                wallHeight = scrHeigth;
+            }
+            float wallOffset = halfScreen - wallHeight / 2;
+            
+            float pitch = 0.0f;
+
+            float ty = offY * yStep;
+            
+            // SAMPLE FROM WALL TEXTURES
+            for (int y = wallOffset + pitch; y < wallOffset + wallHeight - pitch; y++)
+            {
+                Uint32 sampleColor = SDL_MapRGB(texTarget.getPixFormat(), wallSprite.GetRGBColor(tx, ty).r, wallSprite.GetRGBColor(tx, ty).g, wallSprite.GetRGBColor(tx, ty).b);
+                buffer[y * texTarget.getWidth() + x] = sampleColor;
+                ty += yStep;
+            }
+
+            // SAMPLE FROM FLOOR TEXTURE
+            float deg = deg2rad(aCurrent);
+            float raFix = cosf(deg2rad(clampAngle(aCurrent - this->player.angle)));
+            for (int y = wallOffset + wallHeight - pitch; y < scrHeigth - pitch; y++)
+            {
+                // i dont know why this numbers: 158 * 2 * 32 work with 128 by 128 textures, 
+                // ill leave this for now and come back to find out
+                float dy = y - (halfScreen);
+                tx = this->player.pos.x + cosf(deg) * 158 * 2 * 32 / dy / raFix;
+                ty = this->player.pos.y - sinf(deg) * 158 * 2 * 32 / dy / raFix;
+                tx = (int)(tx) & (floorSprite.nWidth - 1);
+                ty = (int)(ty) & (floorSprite.nHeight - 1);
+
+                Uint32 sampleColor = SDL_MapRGB(texTarget.getPixFormat(), floorSprite.GetRGBColor(tx, ty).r, floorSprite.GetRGBColor(tx, ty).g, floorSprite.GetRGBColor(tx, ty).b);
+                buffer[y * texTarget.getWidth() + x] = sampleColor;
+            }
+        }
+        aCurrent += aDelta;
+    }
+
+    texTarget.unlockTexture();
+    texTarget.render(this->window, 0, 0);
+
+    // render croshair
+    SDL_SetRenderDrawColor(this->window->renderer, 150, 255, 51, 255);
+    vec2 P1 = vec2(this->window->getWidth() / 2 - 5.0f, this->window->getHeight() / 2);
+    vec2 P2 = vec2(this->window->getWidth() / 2 + 5.0f, this->window->getHeight() / 2);
+    SDL_RenderDrawLineF(this->window->renderer, P1.x, P1.y, P2.x, P2.y);
+    P1 = vec2(this->window->getWidth() / 2, this->window->getHeight() / 2 + 5.0f);
+    P2 = vec2(this->window->getWidth() / 2, this->window->getHeight() / 2 - 5.0f);
+    SDL_RenderDrawLineF(this->window->renderer, P1.x, P1.y, P2.x, P2.y);
+
+    if (this->keyboard->printData)
+    {
+        this->debugging();
+        this->mouse->printData = true;
+    }
 }
 
 void MainGame::renderMinimap(float dt)
@@ -43,7 +166,7 @@ void MainGame::renderMinimap(float dt)
     SDL_SetRenderDrawColor(this->window->renderer, 0, 0, 0, 255);
 
     // render background for minimap
-    SDL_Rect r = {0, 0, this->VPminimap.w, this->VPminimap.h};
+    SDL_Rect r = { 0, 0, this->VPminimap.w, this->VPminimap.h };
     SDL_RenderFillRect(this->window->renderer, &r);
 
     // render minimap to port
@@ -68,152 +191,17 @@ void MainGame::renderMinimap(float dt)
     // draw rays
     for (int i = 0; i < mNumRays; i++)
     {
-        if (this->player.rays[i].results.hit)
+        if (mHitCoords[i].x > -1)
             SDL_SetRenderDrawColor(window->renderer, 153, 0, 76, 255);
         else
             SDL_SetRenderDrawColor(window->renderer, 255, 255, 255, 255);
 
         float xPos = this->player.pos.x * xConvRatio;
         float yPos = this->player.pos.y * yConvRatio;
-        float xInt = this->player.rays[i].results.intersection.x * xConvRatio;
-        float yInt = this->player.rays[i].results.intersection.y * yConvRatio;
+        float xInt = mHitCoords[i].x * xConvRatio;
+        float yInt = mHitCoords[i].y * yConvRatio;
 
         SDL_RenderDrawLineF(this->window->renderer, xPos, yPos, xInt, yInt);
-    }
-}
-
-void MainGame::renderWorld(float dt)
-{
-
-    /*
-    ====================================
-    Player stuff
-    ====================================
-    */
-
-    // player updates and translations
-    this->player.updatePos(this->keyboard, dt, this->map);
-    this->player.updateCurrentAngle(this->mouse, dt);
-    this->player.translate(map->getPlayerSize(), mNumRays);
-
-    // raycasting
-    this->player.rayCastDDD(this->map);
-
-    // render world:
-    SDL_RenderSetViewport(this->window->renderer, &this->VPworld);
-
-    SDL_Rect texturePart;
-
-    float scrHeigth = this->VPworld.h;
-    float scrWidht = this->VPworld.w;
-    int halfScreen = (int)scrHeigth >> 1;
-
-    /*
-    =====================================================
-    render Walls, Floors and Ceilings to texture buffer and then render to screen
-    =====================================================
-    */
-
-    // create target texture
-    Texture texTarget = Texture(this->window, "assets/BufferTextures/space960x640.png", 0);
-
-    int texWidth = texTarget.getWidth(); // should be pitch / 4
-    int texHeight = texTarget.getHeight();
-    texTarget.lockTexture();
-    Uint32 *buffer = (Uint32 *)texTarget.getPixels();
-    float pDistToScreen = map->getPlayerDistToScr();
-
-    /*
-    ====================================
-    render walls based on rays length
-    ====================================
-    */
-
-    float wallWidth = (float)(map->getWidth() * map->getCellSize()) / (float)mNumRays;
-    int midRow = halfScreen / map->getCellSize();
-
-    SDL_FRect wall;
-    for (int x = 0; x < mNumRays; x++)
-    {
-        if (this->player.rays[x].results.hit)
-        {
-            // get offset for rendering texture
-            int cellX = this->player.rays[x].results.intersection.x;
-            int cellY = this->player.rays[x].results.intersection.y;
-            SDL_Rect cell = this->map->getCell(vec2(cellX, cellY)).rect;
-            
-            float tx;
-            if (this->player.rays[x].results.HitDir == 0) // horizontal hit
-                tx = this->player.rays[x].results.intersection.y - cell.y;
-            else // vertical hit
-                tx = this->player.rays[x].results.intersection.x - cell.x;
-            
-            tx /= map->getCellSize();
-            tx *= this->wallSprite.nWidth;
-
-            // fix fish eye
-            float aDist = clampAngle(player.rays[x].angle - player.angle);
-            float modDistance = player.rays[x].distance * cosf(deg2rad(aDist));
-
-            // compute wall height
-            float wallHeight = ((float)map->getCellSize() * map->getPlayerDistToScr()) / modDistance;
-            float yStep = this->wallSprite.nHeight / wallHeight;
-            float offY = 0;
-            if (wallHeight >= scrHeigth)
-            {
-                offY = (wallHeight - scrHeigth) / 2;
-                wallHeight = scrHeigth;
-            }
-            float wallOffset = halfScreen - wallHeight / 2;
-            
-            float ty = offY * yStep;
-            
-            // SAMPLE FROM WALL TEXTURES
-            for (int y = wallOffset; y < wallOffset + wallHeight; y++)
-            {
-                Uint32 sampleColor = SDL_MapRGB(texTarget.getPixFormat(), wallSprite.GetRGBColor(tx, ty).r, wallSprite.GetRGBColor(tx, ty).g, wallSprite.GetRGBColor(tx, ty).b);
-                buffer[y * texWidth + x] = sampleColor;
-                ty += yStep;
-            }
-
-            // SAMPLE FROM FLOOR TEXTURE
-            float deg = deg2rad(this->player.rays[x].angle);
-            float raFix = cosf(deg2rad(clampAngle(this->player.rays[x].angle - this->player.angle)));
-            for (int y = wallOffset + wallHeight; y < scrHeigth; y++)
-            {
-                // i dont know why this numbers: 158 * 2 * 32 work with 128 by 128 textures, 
-                // ill leave this for now and come back to find out
-                float dy = y - (halfScreen);    
-                tx = this->player.pos.x + cosf(deg) * 158 * 2 * 32/** floorSprite.nWidth*/ / dy / raFix;
-                ty = this->player.pos.y - sinf(deg) * 158 * 2 * 32/** floorSprite.nHeight*/ / dy / raFix;
-                tx = (int)(tx) & (floorSprite.nWidth - 1);
-                ty = (int)(ty) & (floorSprite.nHeight - 1);
-
-                Uint32 sampleColor = SDL_MapRGB(texTarget.getPixFormat(), floorSprite.GetRGBColor(tx, ty).r, floorSprite.GetRGBColor(tx, ty).g, floorSprite.GetRGBColor(tx, ty).b);
-                buffer[y * texWidth + x] = sampleColor;
-            }
-        }
-    }
-
-    texTarget.unlockTexture();
-    texTarget.render(this->window, 0, 0);
-
-    // render gun
-    // this->gun1->render(this->window, this->window->getWidth() - this->gun1->getWidth(), this->window->getHeight() - this->gun1->getHeight());
-
-    // render croshair
-    SDL_SetRenderDrawColor(this->window->renderer, 150, 255, 51, 255);
-    vec2 P1 = vec2(this->window->getWidth() / 2 - 5.0f, this->window->getHeight() / 2);
-    vec2 P2 = vec2(this->window->getWidth() / 2 + 5.0f, this->window->getHeight() / 2);
-    SDL_RenderDrawLineF(this->window->renderer, P1.x, P1.y, P2.x, P2.y);
-    P1 = vec2(this->window->getWidth() / 2, this->window->getHeight() / 2 + 5.0f);
-    P2 = vec2(this->window->getWidth() / 2, this->window->getHeight() / 2 - 5.0f);
-    SDL_RenderDrawLineF(this->window->renderer, P1.x, P1.y, P2.x, P2.y);
-
-    if (this->keyboard->printData)
-    {
-        this->debugging();
-        this->mouse->printData = true;
     }
 }
 
@@ -248,5 +236,4 @@ void MainGame::setWorldPort()
 
 void MainGame::cleanup()
 {
-    this->player.clearRays();
 }
